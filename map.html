@@ -47,11 +47,13 @@
                 if (markers[vehicleId]) {
                   markers[vehicleId].setPosition(position);
                   markers[vehicleId].setLabel(age);
-                  markers[vehicleId].setTitle(age + ' seconds ago');
+                  //markers[vehicleId].setTitle(age + ' seconds ago');
+                  markers[vehicleId].setTitle(vehicle.route);
                 } else {
                   var marker = new SlidingMarker({
                     label: age,
-                    title: age + ' seconds ago',
+                    //title: age + ' seconds ago',
+                    title: vehicle.route,
                     position: position
                   });
                   marker.setMap(map);
