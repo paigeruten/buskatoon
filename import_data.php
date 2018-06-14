@@ -1,6 +1,6 @@
 <?php
 
-$DB_FILE = 'sasktransit.sqlite3';
+$DB_FILE = 'buskatoon.sqlite3';
 
 if (file_exists($DB_FILE)) {
   unlink($DB_FILE);

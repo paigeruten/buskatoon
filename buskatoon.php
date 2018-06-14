@@ -4,8 +4,10 @@ require_once 'vendor/autoload.php';
 
 use transit_realtime\FeedMessage;
 
-$DB_FILE = 'sasktransit.sqlite3';
-$JSON_FILE = $argv[1] ?? 'vehicle_positions.json';
+$SCRIPT_PATH = realpath(dirname(__FILE__));
+
+$DB_FILE = "$SCRIPT_PATH/buskatoon.sqlite3";
+$JSON_FILE = $argv[1] ?? "$SCRIPT_PATH/vehicle_positions.json";
 
 $vehicles = [];
 if (file_exists($JSON_FILE)) {
