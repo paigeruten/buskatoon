@@ -40,24 +40,36 @@
             dataType: "json",
             context: document.body,
             success: function(vehicles) {
+              for (var vehicleId in markers) {
+                markers[vehicleId]._alive = false;
+              }
+
               for (var vehicleId in vehicles) {
                 var vehicle = vehicles[vehicleId][0];
                 var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
                 var age = Math.round(+(new Date())/1000 - vehicle.timestamp);
+                var route = vehicle.route === null ? '?' : vehicle.route;
                 if (markers[vehicleId]) {
                   markers[vehicleId].setPosition(position);
-                  markers[vehicleId].setLabel(age);
-                  //markers[vehicleId].setTitle(age + ' seconds ago');
-                  markers[vehicleId].setTitle(vehicle.route);
+                  markers[vehicleId].setLabel(route);
+                  markers[vehicleId].setTitle(age + ' seconds ago');
+                  markers[vehicleId]._alive = true;
                 } else {
                   var marker = new SlidingMarker({
-                    label: age,
-                    //title: age + ' seconds ago',
-                    title: vehicle.route,
+                    label: route,
+                    title: age + ' seconds ago',
                     position: position
                   });
                   marker.setMap(map);
                   markers[vehicleId] = marker;
+                  markers[vehicleId]._alive = true;
+                }
+              }
+
+              for (var vehicleId in markers) {
+                if (!markers[vehicleId]._alive) {
+                  markers[vehicleId].setMap(null);
+                  delete markers[vehicleId];
                 }
               }
 

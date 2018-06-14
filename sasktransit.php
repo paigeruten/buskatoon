@@ -56,14 +56,14 @@ foreach ($feed->getEntityList() as $entity) {
     $position = $vehicle->getPosition();
 
     $trip_id = $vehicle->getTrip()->getTripId();
-    $route = $routes_by_trip_id[$trip_id];
+    $route = $routes_by_trip_id[$trip_id] ?? [];
 
     if (!isset($vehicles[$id])) {
       $vehicles[$id] = [];
     }
     if (empty($vehicles[$id]) || $vehicles[$id][0]['timestamp'] != $vehicle->getTimestamp()) {
       array_unshift($vehicles[$id], [
-        'route' => $route[$ROUTE_SHORT_NAME],
+        'route' => $route[$ROUTE_SHORT_NAME] ?? null,
         'latitude' => $position->getLatitude(),
         'longitude' => $position->getLongitude(),
         'bearing' => $position->getBearing() ?? 0,
@@ -71,6 +71,12 @@ foreach ($feed->getEntityList() as $entity) {
       ]);
       $vehicles[$id] = array_slice($vehicles[$id], 0, 5);
     }
+  }
+}
+
+foreach (array_keys($vehicles) as $id) {
+  if ($vehicles[$id][0]['timestamp'] < time() - 300) {
+    unset($vehicles[$id]);
   }
 }
 
