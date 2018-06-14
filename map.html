@@ -48,7 +48,7 @@
                 var vehicle = vehicles[vehicleId][0];
                 var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
                 var age = Math.round(+(new Date())/1000 - vehicle.timestamp);
-                var route = vehicle.route === null ? '?' : vehicle.route;
+                var route = vehicle.route === null ? '?' : vehicle.route.headsign;
                 if (markers[vehicleId]) {
                   markers[vehicleId].setPosition(position);
                   markers[vehicleId].setLabel(route);

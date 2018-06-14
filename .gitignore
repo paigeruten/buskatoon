@@ -1,3 +1,4 @@
 vendor/
 vehicle_positions.json
+*.sqlite3
 .tags
