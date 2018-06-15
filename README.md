@@ -2,7 +2,7 @@
 
 It's a map of Saskatoon that shows where all the buses are at.
 
-Here it is: https://viewsourcecode.org/buskatoon (https://buskatoon.ca coming soon!)
+Here it is: https://buskatoon.ca/
 
 (Maybe inspired by: http://totransit.ca/)
 
