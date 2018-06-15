@@ -41,5 +41,8 @@ In addition to latitude and longitude, we also get the bearing (direction the bu
 * Info boxes that come up when you click on a bus marker (instead of title text)
 * Display (and maybe zoom into) your location
 * Have arrows showing bus's current direction (if that's at all accurate)
+* Show a timer that estimates how long till the next update (with a note about how data tends to be 20 seconds out of date)
+* Figure out better way of showing the buss's's location history. Maybe only show it when clicking on a bus, or fade out the colours of each line
+* Show your current location
 * Better browser compatibility?
 * Use webpack or something instead of loading JS libraries from various CDNs?
