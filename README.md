@@ -46,3 +46,4 @@ In addition to latitude and longitude, we also get the bearing (direction the bu
 * Show your current location
 * Better browser compatibility?
 * Use webpack or something instead of loading JS libraries from various CDNs?
+* Don't filter out buses that haven't reported in a while. Show them as greyed-out markers or something. (Rule of thumb: don't hide any information that VehiclePositions.pb gives) 
