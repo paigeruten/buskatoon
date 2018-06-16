@@ -46,4 +46,4 @@ In addition to latitude and longitude, we also get the bearing (direction the bu
 * Show your current location
 * Better browser compatibility?
 * Use webpack or something instead of loading JS libraries from various CDNs?
-* Don't filter out buses that haven't reported in a while. Show them as greyed-out markers or something. (Rule of thumb: don't hide any information that VehiclePositions.pb gives) 
+* Do something about handling outages. All the buses stopped reporting their positions for ~15 minutes today. Maybe draw out of date buses as greyed-out, or show a message when an outage is detected. Make sure not to draw the polyline when there are big time gaps in data.
