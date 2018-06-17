@@ -100,8 +100,13 @@
           zoom: 13
         });
         var markers = {};
-        var info_windows = {};
+        var info_window = new google.maps.InfoWindow();
+        info_window._vehicleId = null;
         var lines = {};
+
+        google.maps.event.addListener(map, "click", function (event) {
+          info_window.close();
+        });
 
         var updatePositions = function() {
           $.ajax({
@@ -136,7 +141,11 @@
                   markers[vehicleId].setPosition(position);
                   markers[vehicleId].set("labelContent", label);
                   markers[vehicleId].setTitle(title);
+                  markers[vehicleId]._info = info;
                   markers[vehicleId]._alive = true;
+                  if (info_window._vehicleId == vehicleId) {
+                    info_window.setContent(info);
+                  }
                 } else {
                   var marker = new MarkerWithLabel({
                     icon: {
@@ -153,16 +162,16 @@
                   marker.setMap(map);
                   markers[vehicleId] = marker;
                   markers[vehicleId]._alive = true;
+                  markers[vehicleId]._info = info;
 
-                  var info_window = new google.maps.InfoWindow({
-                    content: info
-                  });
-                  info_windows[vehicleId] = info_window;
-                  (function (info_window, marker) {
+                  (function (vehicleId, marker) {
                     marker.addListener('click', function() {
+                      info_window.close();
+                      info_window.setContent(markers[vehicleId]._info);
                       info_window.open(map, marker);
+                      info_window._vehicleId = vehicleId;
                     });
-                  })(info_window, marker);
+                  })(vehicleId, marker);
                 }
               }
 
