@@ -32,6 +32,19 @@
         margin: 0;
       }
 
+      #info {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        font-size: 14px;
+        background-color: white;
+        padding: 3px;
+      }
+
+      #update_timer {
+        font-weight: bold;
+      }
+
       /* https://github.com/tholman/github-corners */
       .github-corner:hover .octo-arm {
         animation: octocat-wave 560ms ease-in-out;
@@ -83,6 +96,10 @@
       </svg>
     </a>
     <div id="map"></div>
+    <div id="info">
+      Next update expected: <span id="update_timer">now</span><br>
+      Note: Bus locations are already 20s out of date upon update.
+    </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="jquery.easing.1.3.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js"></script>
@@ -108,6 +125,8 @@
           info_window.close();
         });
 
+        var last_update = null;
+
         var updatePositions = function() {
           $.ajax({
             url: "vehicle_positions.json",
@@ -118,6 +137,7 @@
                 markers[vehicleId]._alive = false;
               }
 
+              var updated = false;
               for (var vehicleId in vehicles) {
                 var vehicle = vehicles[vehicleId][0];
                 var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
@@ -131,7 +151,7 @@
                 info += "<p>";
                 if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
                 if (vehicle.route) info += "<strong>Headsign:</strong> " + vehicle.route.headsign + "<br>";
-                info += "<strong>Last report:</strong> " + age + " seconds ago";
+                info += "<strong>Last report:</strong> <span id='info_window_age'>" + age + "</span> seconds ago";
                 info += "</p>";
 
                 var label = vehicle.route === null ? '?' : vehicle.route.short_name;
@@ -145,8 +165,13 @@
                   markers[vehicleId]._alive = true;
                   if (info_window._vehicleId == vehicleId) {
                     info_window.setContent(info);
+                    info_window._last_report = vehicle.timestamp;
+                  }
+                  if (vehicle.timestamp != markers[vehicleId]._timestamp) {
+                    updated = true;
                   }
                 } else {
+                  updated = true; // ?
                   var marker = new MarkerWithLabel({
                     icon: {
                       url: 'bus-marker.svg',
@@ -164,15 +189,17 @@
                   markers[vehicleId]._alive = true;
                   markers[vehicleId]._info = info;
 
-                  (function (vehicleId, marker) {
+                  (function (vehicleId, marker, timestamp) {
                     marker.addListener('click', function() {
                       info_window.close();
                       info_window.setContent(markers[vehicleId]._info);
-                      info_window.open(map, marker);
+                      info_window._last_report = timestamp;
                       info_window._vehicleId = vehicleId;
+                      info_window.open(map, marker);
                     });
-                  })(vehicleId, marker);
+                  })(vehicleId, marker, vehicle.timestamp);
                 }
+                markers[vehicleId]._timestamp = vehicle.timestamp;
               }
 
               for (var vehicleId in markers) {
@@ -185,6 +212,10 @@
                     delete lines[vehicleId];
                   }
                 }
+              }
+
+              if (updated) {
+                last_update = Math.round(+(new Date())/1000);
               }
 
               setTimeout(function () {
@@ -212,9 +243,26 @@
             }
           });
         };
-
         updatePositions();
         setInterval(updatePositions, 5000);
+
+        var updateTimer = function() {
+          if (last_update) {
+            var seconds_since = Math.round(+(new Date()) / 1000) - last_update;
+            var expected = 30 - seconds_since;
+            if (expected <= 0) {
+              $("#update_timer").text('now');
+            } else {
+              $("#update_timer").text(expected + 's');
+            }
+            if (info_window._last_report) {
+              var age = Math.round(+(new Date())/1000 - info_window._last_report);
+              $("#info_window_age").text(age);
+            }
+          }
+        };
+        updateTimer();
+        setInterval(updateTimer, 1000);
       }
       initMap();
     </script>
