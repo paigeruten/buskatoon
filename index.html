@@ -170,7 +170,7 @@
         info += "<p>";
         if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
         if (this.route) info += "<strong>Headsign:</strong> " + this.route.headsign + "<br>";
-        info += "<strong>Last report:</strong> <span id='info_window_age'>" + age + "</span> seconds ago";
+        info += "<strong>Last report:</strong> " + age + " seconds ago";
         info += "</p>";
 
         return info;
@@ -211,7 +211,6 @@
                   vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
                     info_window.setContent(vehicle.getInfo());
-                    info_window._last_report = vehicle.last_report;
                   }
                 } else {
                   updated = true; // ?
@@ -225,7 +224,6 @@
                     vehicle.marker.addListener('click', function() {
                       info_window.close();
                       info_window.setContent(vehicle.getInfo());
-                      info_window._last_report = vehicle.last_report;
                       info_window._vehicleId = vehicle.id;
                       info_window.open(map, vehicle.marker);
                     });
@@ -284,9 +282,8 @@
             } else {
               $("#update_timer").text(expected + 's');
             }
-            if (info_window._last_report) {
-              var age = Math.round(+(new Date())/1000 - info_window._last_report);
-              $("#info_window_age").text(age);
+            if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
+              info_window.setContent(vehicles[info_window._vehicleId].getInfo());
             }
           }
         };
