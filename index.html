@@ -17,6 +17,18 @@
         padding: 0;
       }
 
+      .bus-label {
+        background-color: white;
+        text-align: center;
+        color: #0A184E;
+        font-size: 10px;
+        width: 18px;
+        border: 1px solid #0A184E;
+        border-radius: 3px;
+        margin: 0;
+        padding: 0;
+      }
+
       /* https://github.com/tholman/github-corners */
       .github-corner:hover .octo-arm {
         animation: octocat-wave 560ms ease-in-out;
@@ -75,6 +87,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marker-animate-unobtrusive/0.2.8/vendor/markerAnimate.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marker-animate-unobtrusive/0.2.8/SlidingMarker.min.js"></script>
     <script>
+      SlidingMarker.initializeGlobally();
+    </script>
+    <script src="markerwithlabel.terikon.js"></script>
+    <script>
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           center: { lat: 52.133214, lng: -106.670046 },
@@ -97,19 +113,37 @@
                 var vehicle = vehicles[vehicleId][0];
                 var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
                 var age = Math.round(+(new Date())/1000 - vehicle.timestamp);
-                var label = vehicle.route === null ? '?' : vehicle.route.short_name;
+
                 var title = "";
                 if (vehicle.route) title += "Route: " + vehicle.route.long_name + "\n";
                 if (vehicle.route) title += "Destination: " + vehicle.route.headsign + "\n";
                 title += "Last report: " + age + " seconds ago";
+
+                var direction = Math.round(vehicle.bearing / 45);
+                direction = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'][direction];
+                if (direction) title = "Direction: " + direction + "\n" + title;
+
+                var label = vehicle.route === null ? '?' : vehicle.route.short_name;
+
                 if (markers[vehicleId]) {
                   markers[vehicleId].setPosition(position);
-                  markers[vehicleId].setLabel(label);
+                  //markers[vehicleId].setLabel(label);
                   markers[vehicleId].setTitle(title);
                   markers[vehicleId]._alive = true;
                 } else {
-                  var marker = new SlidingMarker({
-                    label: label,
+                  var marker = new MarkerWithLabel({
+                    icon: {
+                      url: 'bus-marker.svg',
+                      scaledSize: new google.maps.Size(18, 24),
+                      //labelOrigin: new google.maps.Point(8, -6)
+                      //size: new google.maps.Size(20, 32),
+                      //origin: new google.maps.Point(0, 0),
+                      //anchor: new google.maps.Point(0, 32)
+                    },
+                    labelContent: label,
+                    labelAnchor: new google.maps.Point(10, 34),
+                    labelClass: "bus-label",
+                    labelInBackground: true,
                     title: title,
                     position: position
                   });

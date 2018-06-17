@@ -15,6 +15,9 @@ if (file_exists($JSON_FILE)) {
 }
 
 $data = file_get_contents("http://apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb");
+if ($data === false) {
+  die("Failed to retrieve VehiclePositions.pb\n");
+}
 $feed = new FeedMessage();
 $feed->parse($data);
 
