@@ -100,6 +100,7 @@
           zoom: 13
         });
         var markers = {};
+        var info_windows = {};
         var lines = {};
 
         var updatePositions = function() {
@@ -117,16 +118,19 @@
                 var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
                 var age = Math.round(+(new Date())/1000 - vehicle.timestamp);
 
-                var title = "";
-                if (vehicle.route) title += "Route: " + vehicle.route.long_name + "\n";
-                if (vehicle.route) title += "Destination: " + vehicle.route.headsign + "\n";
-                title += "Last report: " + age + " seconds ago";
-
                 var direction = Math.round(vehicle.bearing / 45);
-                direction = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'][direction];
-                if (direction) title = "Direction: " + direction + "\n" + title;
+                direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
+
+                var info = "";
+                if (vehicle.route) info += "<h3>Route " + vehicle.route.short_name + " &mdash; " + vehicle.route.long_name + "</h3>";
+                info += "<p>";
+                if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
+                if (vehicle.route) info += "<strong>Headsign:</strong> " + vehicle.route.headsign + "<br>";
+                info += "<strong>Last report:</strong> " + age + " seconds ago";
+                info += "</p>";
 
                 var label = vehicle.route === null ? '?' : vehicle.route.short_name;
+                var title = vehicle.route === null ? 'No trip/route info for this bus' : vehicle.route.long_name;
 
                 if (markers[vehicleId]) {
                   markers[vehicleId].setPosition(position);
@@ -149,6 +153,16 @@
                   marker.setMap(map);
                   markers[vehicleId] = marker;
                   markers[vehicleId]._alive = true;
+
+                  var info_window = new google.maps.InfoWindow({
+                    content: info
+                  });
+                  info_windows[vehicleId] = info_window;
+                  (function (info_window, marker) {
+                    marker.addListener('click', function() {
+                      info_window.open(map, marker);
+                    });
+                  })(info_window, marker);
                 }
               }
 
