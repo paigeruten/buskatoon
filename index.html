@@ -111,6 +111,71 @@
     </script>
     <script src="markerwithlabel.terikon.js"></script>
     <script>
+      function Vehicle(id, data, map) {
+        this.id = id;
+        this.longitude = data.longitude;
+        this.latitude = data.latitude;
+        this.bearing = data.bearing;
+        this.last_report = data.timestamp;
+        this.route = data.route;
+        this.map = map;
+
+        this.marker = new MarkerWithLabel({
+          icon: {
+            url: 'bus-marker.svg',
+            scaledSize: new google.maps.Size(18, 24)
+          },
+          labelContent: this.getLabel(),
+          labelAnchor: new google.maps.Point(10, 34),
+          labelClass: "bus-label",
+          labelInBackground: true,
+          title: this.getTitle(),
+          position: new google.maps.LatLng(this.latitude, this.longitude)
+        });
+        this.marker.setMap(this.map);
+      }
+
+      Vehicle.prototype.update = function (data) {
+        var timestamp_changed = (this.last_report != data.timestamp);
+
+        this.longitude = data.longitude;
+        this.latitude = data.latitude;
+        this.bearing = data.bearing;
+        this.last_report = data.timestamp;
+        this.route = data.route;
+
+        this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
+        this.marker.set("labelContent", this.getLabel());
+        this.marker.setTitle(this.getTitle());
+
+        return timestamp_changed;
+      };
+
+      Vehicle.prototype.getLabel = function() {
+        return this.route ? this.route.short_name : '?';
+      };
+
+      Vehicle.prototype.getTitle = function() {
+        return this.route ? this.route.long_name : 'No trip/route info for this bus';
+      };
+
+      Vehicle.prototype.getInfo = function() {
+        var age = Math.round(+(new Date())/1000 - this.last_report);
+
+        var direction = Math.round(this.bearing / 45);
+        direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
+
+        var info = "";
+        if (this.route) info += "<h3>Route " + this.route.short_name + " &mdash; " + this.route.long_name + "</h3>";
+        info += "<p>";
+        if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
+        if (this.route) info += "<strong>Headsign:</strong> " + this.route.headsign + "<br>";
+        info += "<strong>Last report:</strong> <span id='info_window_age'>" + age + "</span> seconds ago";
+        info += "</p>";
+
+        return info;
+      };
+
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
           center: { lat: 52.133214, lng: -106.670046 },
@@ -139,70 +204,33 @@
               var updated = false;
               for (var vehicleId in data) {
                 var vehicle_data = data[vehicleId][0];
-                var position = new google.maps.LatLng(vehicle_data.latitude, vehicle_data.longitude);
-                var age = Math.round(+(new Date())/1000 - vehicle_data.timestamp);
-
-                var direction = Math.round(vehicle_data.bearing / 45);
-                direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
-
-                var info = "";
-                if (vehicle_data.route) info += "<h3>Route " + vehicle_data.route.short_name + " &mdash; " + vehicle_data.route.long_name + "</h3>";
-                info += "<p>";
-                if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
-                if (vehicle_data.route) info += "<strong>Headsign:</strong> " + vehicle_data.route.headsign + "<br>";
-                info += "<strong>Last report:</strong> <span id='info_window_age'>" + age + "</span> seconds ago";
-                info += "</p>";
-
-                var label = vehicle_data.route === null ? '?' : vehicle_data.route.short_name;
-                var title = vehicle_data.route === null ? 'No trip/route info for this bus' : vehicle_data.route.long_name;
 
                 if (vehicles[vehicleId]) {
                   var vehicle = vehicles[vehicleId];
-                  vehicle.marker.setPosition(position);
-                  vehicle.marker.set("labelContent", label);
-                  vehicle.marker.setTitle(title);
-                  vehicle.info = info;
+                  updated = vehicle.update(vehicle_data);
                   vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
-                    info_window.setContent(info);
-                    info_window._last_report = vehicle_data.timestamp;
-                  }
-                  if (vehicle_data.timestamp != vehicles[vehicleId].timestamp) {
-                    updated = true;
+                    info_window.setContent(vehicle.getInfo());
+                    info_window._last_report = vehicle.last_report;
                   }
                 } else {
                   updated = true; // ?
-                  var marker = new MarkerWithLabel({
-                    icon: {
-                      url: 'bus-marker.svg',
-                      scaledSize: new google.maps.Size(18, 24)
-                    },
-                    labelContent: label,
-                    labelAnchor: new google.maps.Point(10, 34),
-                    labelClass: "bus-label",
-                    labelInBackground: true,
-                    title: title,
-                    position: position
-                  });
-                  marker.setMap(map);
 
-                  vehicles[vehicleId] = {
-                    marker: marker,
-                    alive: true,
-                    info: info
-                  };
+                  var vehicle = new Vehicle(vehicleId, vehicle_data, map);
+                  vehicle.alive = true;
 
-                  (function (vehicleId, timestamp) {
-                    vehicles[vehicleId].marker.addListener('click', function() {
+                  vehicles[vehicleId] = vehicle;
+
+                  (function (vehicle) {
+                    vehicle.marker.addListener('click', function() {
                       info_window.close();
-                      info_window.setContent(vehicles[vehicleId].info);
-                      info_window._last_report = timestamp;
-                      info_window._vehicleId = vehicleId;
-                      info_window.open(map, vehicles[vehicleId].marker);
+                      info_window.setContent(vehicle.getInfo());
+                      info_window._last_report = vehicle.last_report;
+                      info_window._vehicleId = vehicle.id;
+                      info_window.open(map, vehicle.marker);
                     });
-                  })(vehicleId, vehicle_data.timestamp);
+                  })(vehicle);
                 }
-                vehicles[vehicleId].timestamp = vehicle_data.timestamp;
               }
 
               for (var vehicleId in vehicles) {
