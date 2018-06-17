@@ -116,15 +116,14 @@
           center: { lat: 52.133214, lng: -106.670046 },
           zoom: 13
         });
-        var markers = {};
         var info_window = new google.maps.InfoWindow();
         info_window._vehicleId = null;
-        var lines = {};
 
         google.maps.event.addListener(map, "click", function (event) {
           info_window.close();
         });
 
+        var vehicles = {};
         var last_update = null;
 
         var updatePositions = function() {
@@ -132,42 +131,43 @@
             url: "vehicle_positions.json",
             dataType: "json",
             context: document.body,
-            success: function(vehicles) {
-              for (var vehicleId in markers) {
-                markers[vehicleId]._alive = false;
+            success: function(data) {
+              for (var vehicleId in vehicles) {
+                vehicles[vehicleId].alive = false;
               }
 
               var updated = false;
-              for (var vehicleId in vehicles) {
-                var vehicle = vehicles[vehicleId][0];
-                var position = new google.maps.LatLng(vehicle.latitude, vehicle.longitude);
-                var age = Math.round(+(new Date())/1000 - vehicle.timestamp);
+              for (var vehicleId in data) {
+                var vehicle_data = data[vehicleId][0];
+                var position = new google.maps.LatLng(vehicle_data.latitude, vehicle_data.longitude);
+                var age = Math.round(+(new Date())/1000 - vehicle_data.timestamp);
 
-                var direction = Math.round(vehicle.bearing / 45);
+                var direction = Math.round(vehicle_data.bearing / 45);
                 direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
 
                 var info = "";
-                if (vehicle.route) info += "<h3>Route " + vehicle.route.short_name + " &mdash; " + vehicle.route.long_name + "</h3>";
+                if (vehicle_data.route) info += "<h3>Route " + vehicle_data.route.short_name + " &mdash; " + vehicle_data.route.long_name + "</h3>";
                 info += "<p>";
                 if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
-                if (vehicle.route) info += "<strong>Headsign:</strong> " + vehicle.route.headsign + "<br>";
+                if (vehicle_data.route) info += "<strong>Headsign:</strong> " + vehicle_data.route.headsign + "<br>";
                 info += "<strong>Last report:</strong> <span id='info_window_age'>" + age + "</span> seconds ago";
                 info += "</p>";
 
-                var label = vehicle.route === null ? '?' : vehicle.route.short_name;
-                var title = vehicle.route === null ? 'No trip/route info for this bus' : vehicle.route.long_name;
+                var label = vehicle_data.route === null ? '?' : vehicle_data.route.short_name;
+                var title = vehicle_data.route === null ? 'No trip/route info for this bus' : vehicle_data.route.long_name;
 
-                if (markers[vehicleId]) {
-                  markers[vehicleId].setPosition(position);
-                  markers[vehicleId].set("labelContent", label);
-                  markers[vehicleId].setTitle(title);
-                  markers[vehicleId]._info = info;
-                  markers[vehicleId]._alive = true;
+                if (vehicles[vehicleId]) {
+                  var vehicle = vehicles[vehicleId];
+                  vehicle.marker.setPosition(position);
+                  vehicle.marker.set("labelContent", label);
+                  vehicle.marker.setTitle(title);
+                  vehicle.info = info;
+                  vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
                     info_window.setContent(info);
-                    info_window._last_report = vehicle.timestamp;
+                    info_window._last_report = vehicle_data.timestamp;
                   }
-                  if (vehicle.timestamp != markers[vehicleId]._timestamp) {
+                  if (vehicle_data.timestamp != vehicles[vehicleId].timestamp) {
                     updated = true;
                   }
                 } else {
@@ -185,32 +185,33 @@
                     position: position
                   });
                   marker.setMap(map);
-                  markers[vehicleId] = marker;
-                  markers[vehicleId]._alive = true;
-                  markers[vehicleId]._info = info;
 
-                  (function (vehicleId, marker, timestamp) {
-                    marker.addListener('click', function() {
+                  vehicles[vehicleId] = {
+                    marker: marker,
+                    alive: true,
+                    info: info
+                  };
+
+                  (function (vehicleId, timestamp) {
+                    vehicles[vehicleId].marker.addListener('click', function() {
                       info_window.close();
-                      info_window.setContent(markers[vehicleId]._info);
+                      info_window.setContent(vehicles[vehicleId].info);
                       info_window._last_report = timestamp;
                       info_window._vehicleId = vehicleId;
-                      info_window.open(map, marker);
+                      info_window.open(map, vehicles[vehicleId].marker);
                     });
-                  })(vehicleId, marker, vehicle.timestamp);
+                  })(vehicleId, vehicle_data.timestamp);
                 }
-                markers[vehicleId]._timestamp = vehicle.timestamp;
+                vehicles[vehicleId].timestamp = vehicle_data.timestamp;
               }
 
-              for (var vehicleId in markers) {
-                if (!markers[vehicleId]._alive) {
-                  markers[vehicleId].setMap(null);
-                  delete markers[vehicleId];
-
-                  if (lines[vehicleId]) {
-                    lines[vehicleId].setMap(null);
-                    delete lines[vehicleId];
+              for (var vehicleId in vehicles) {
+                if (!vehicles[vehicleId].alive) {
+                  vehicles[vehicleId].marker.setMap(null);
+                  if (vehicles[vehicleId].line) {
+                    vehicles[vehicleId].line.setMap(null);
                   }
+                  delete vehicles[vehicleId];
                 }
               }
 
@@ -219,10 +220,10 @@
               }
 
               setTimeout(function () {
-                for (var vehicleId in vehicles) {
-                  if (vehicles[vehicleId].length > 1) {
+                for (var vehicleId in data) {
+                  if (data[vehicleId].length > 1) {
                     var busPath = [];
-                    vehicles[vehicleId].forEach(function (position) {
+                    data[vehicleId].forEach(function (position) {
                       busPath.push({ lat: position.latitude, lng: position.longitude });
                     });
 
@@ -232,11 +233,11 @@
                       strokeOpacity: 1.0,
                       strokeWeight: 1.5
                     });
-                    if (lines[vehicleId]) {
-                      lines[vehicleId].setMap(null);
+                    if (vehicles[vehicleId].line) {
+                      vehicles[vehicleId].line.setMap(null);
                     }
                     line.setMap(map);
-                    lines[vehicleId] = line;
+                    vehicles[vehicleId].line = line;
                   }
                 }
               }, 500);
