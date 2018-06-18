@@ -39,7 +39,8 @@ foreach ($feed->getEntityList() as $entity) {
       $route = [
         'short_name' => $result['short_name'],
         'long_name' => $result['long_name'],
-        'headsign' => $result['headsign']
+        'headsign' => $result['headsign'],
+        'color' => $result['color']
       ];
     } else {
       $route = null;

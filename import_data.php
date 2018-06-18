@@ -12,7 +12,8 @@ $db->exec('
   CREATE TABLE routes (
     id INTEGER PRIMARY KEY,
     short_name TEXT,
-    long_name TEXT
+    long_name TEXT,
+    color TEXT
   );
 ');
 
@@ -24,18 +25,20 @@ $db->exec('
   );
 ');
 
-$sql = 'INSERT INTO routes (id, short_name, long_name) VALUES (:id, :short_name, :long_name);';
+$sql = 'INSERT INTO routes (id, short_name, long_name, color) VALUES (:id, :short_name, :long_name, :color);';
 $stmt = $db->prepare($sql);
 $routes_file = fopen("data/routes.txt", "r");
 $routes_header = fgetcsv($routes_file, 1000, ",");
 $ROUTE_ROUTE_ID = array_search('route_id', $routes_header);
 $ROUTE_SHORT_NAME = array_search('route_short_name', $routes_header);
 $ROUTE_LONG_NAME = array_search('route_long_name', $routes_header);
+$ROUTE_COLOR = array_search('route_color', $routes_header);
 while (($row = fgetcsv($routes_file, 1000, ",")) !== FALSE) {
   $stmt->execute([
     ':id' => $row[$ROUTE_ROUTE_ID],
     ':short_name' => $row[$ROUTE_SHORT_NAME],
-    ':long_name' => $row[$ROUTE_LONG_NAME]
+    ':long_name' => $row[$ROUTE_LONG_NAME],
+    ':color' => $row[$ROUTE_COLOR]
   ]);
 }
 fclose($routes_file);

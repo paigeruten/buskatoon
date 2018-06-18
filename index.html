@@ -21,8 +21,10 @@
       .bus-label {
         background-color: white;
         font-family: helvetica neue, arial;
+        text-shadow: 0 0 1px #ddd;
         text-align: center;
-        color: #0A184E;
+        color: black;
+        font-weight: bold;
         font-size: 10px;
         line-height: 10px;
         padding-bottom: 1px;
@@ -32,17 +34,16 @@
         margin: 0;
       }
 
-      #info {
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        font-size: 14px;
-        background-color: white;
-        padding: 3px;
-      }
-
-      #update_timer {
+      .bus-route-number {
+        display: inline-block;
+        text-shadow: 0 0 1px #ddd;
+        text-align: center;
+        color: black;
         font-weight: bold;
+        border-radius: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
+        margin-right: 5px;
       }
 
       /* https://github.com/tholman/github-corners */
@@ -77,12 +78,8 @@
       }
 
       @media (max-width: 500px) {
-        .github-corner:hover .octo-arm {
-          animation: none;
-        }
-
-        .github-corner .octo-arm {
-          animation: octocat-wave 560ms ease-in-out;
+        .github-corner {
+          display: none;
         }
       }
     </style>
@@ -96,10 +93,6 @@
       </svg>
     </a>
     <div id="map"></div>
-    <div id="info">
-      Next update expected: <span id="update_timer">now</span><br>
-      Note: Bus locations are already 20s out of date upon update.
-    </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="jquery.easing.1.3.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js"></script>
@@ -111,7 +104,7 @@
     </script>
     <script src="markerwithlabel.terikon.js"></script>
     <script>
-      function Vehicle(id, data, map) {
+      function Vehicle(id, data, history, map) {
         this.id = id;
         this.longitude = data.longitude;
         this.latitude = data.latitude;
@@ -128,16 +121,17 @@
           labelContent: this.getLabel(),
           labelAnchor: new google.maps.Point(10, 34),
           labelClass: "bus-label",
+          labelStyle: { backgroundColor: this.getColor() },
           labelInBackground: true,
           title: this.getTitle(),
           position: new google.maps.LatLng(this.latitude, this.longitude)
         });
         this.marker.setMap(this.map);
+
+        this.updateHistory(history);
       }
 
-      Vehicle.prototype.update = function (data) {
-        var timestamp_changed = (this.last_report != data.timestamp);
-
+      Vehicle.prototype.update = function (data, history) {
         this.longitude = data.longitude;
         this.latitude = data.latitude;
         this.bearing = data.bearing;
@@ -146,17 +140,52 @@
 
         this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
         this.marker.set("labelContent", this.getLabel());
+        this.marker.set("labelStyle", { backgroundColor: this.getColor() });
         this.marker.setTitle(this.getTitle());
 
-        return timestamp_changed;
+        this.updateHistory(history);
+      };
+
+      Vehicle.prototype.updateHistory = function (history) {
+        if (this.history_line) {
+          this.history_line.forEach(function (line) {
+            line.setMap(null);
+          });
+        }
+
+        this.history_line = [];
+        for (var i = 0; i < history.length - 1; i++) {
+          var line = new google.maps.Polyline({
+            path: [
+              { lat: history[i].latitude, lng: history[i].longitude },
+              { lat: history[i+1].latitude, lng: history[i+1].longitude }
+            ],
+            icons: [{
+              icon: {
+                path: google.maps.SymbolPath.BACKWARD_OPEN_ARROW,
+                scale: 0.75
+              },
+              offset: '0%'
+            }],
+            strokeColor: this.getColor(),
+            strokeOpacity: 1.0,
+            strokeWeight: 1.0
+          });
+          line.setMap(this.map);
+          this.history_line.push(line);
+        }
       };
 
       Vehicle.prototype.getLabel = function() {
-        return this.route ? this.route.short_name : '?';
+        return this.route ? this.route.short_name : '??';
       };
 
       Vehicle.prototype.getTitle = function() {
         return this.route ? this.route.long_name : 'No trip/route info for this bus';
+      };
+
+      Vehicle.prototype.getColor = function (color) {
+        return '#' + (this.route ? this.route.color : 'aaaaaa');
       };
 
       Vehicle.prototype.getInfo = function() {
@@ -166,7 +195,11 @@
         direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
 
         var info = "";
-        if (this.route) info += "<h3>Route " + this.route.short_name + " &mdash; " + this.route.long_name + "</h3>";
+        if (this.route) {
+          info += "<h3><span class='bus-route-number' style='background-color: " + this.getColor() + ";'>" + this.route.short_name + "</span> " + this.route.long_name + "</h3>";
+        } else {
+          info += "<h3><span class='bus-route-number' style='background-color: " + this.getColor() + ";'>??</span> No route</h3>";
+        }
         info += "<p>";
         if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
         if (this.route) info += "<strong>Headsign:</strong> " + this.route.headsign + "<br>";
@@ -189,7 +222,6 @@
         });
 
         var vehicles = {};
-        var last_update = null;
 
         var updatePositions = function() {
           $.ajax({
@@ -201,21 +233,18 @@
                 vehicles[vehicleId].alive = false;
               }
 
-              var updated = false;
               for (var vehicleId in data) {
                 var vehicle_data = data[vehicleId][0];
 
                 if (vehicles[vehicleId]) {
                   var vehicle = vehicles[vehicleId];
-                  updated = vehicle.update(vehicle_data);
+                  vehicle.update(vehicle_data, data[vehicleId]);
                   vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
                     info_window.setContent(vehicle.getInfo());
                   }
                 } else {
-                  updated = true; // ?
-
-                  var vehicle = new Vehicle(vehicleId, vehicle_data, map);
+                  var vehicle = new Vehicle(vehicleId, vehicle_data, data[vehicleId], map);
                   vehicle.alive = true;
 
                   vehicles[vehicleId] = vehicle;
@@ -229,44 +258,30 @@
                     });
                   })(vehicle);
                 }
+
+                (function (vehicle) {
+                  vehicle.history_line.forEach(function (line) {
+                    line.addListener('click', function() {
+                      info_window.close();
+                      info_window.setContent(vehicle.getInfo());
+                      info_window._vehicleId = vehicle.id;
+                      info_window.open(map, vehicle.marker);
+                    });
+                  });
+                })(vehicle);
               }
 
               for (var vehicleId in vehicles) {
                 if (!vehicles[vehicleId].alive) {
                   vehicles[vehicleId].marker.setMap(null);
-                  if (vehicles[vehicleId].line) {
-                    vehicles[vehicleId].line.setMap(null);
+                  if (vehicles[vehicleId].history_line) {
+                    vehicles[vehicleId].history_line.forEach(function (line) {
+                      line.setMap(null);
+                    });
                   }
                   delete vehicles[vehicleId];
                 }
               }
-
-              if (updated) {
-                last_update = Math.round(+(new Date())/1000);
-              }
-
-              setTimeout(function () {
-                for (var vehicleId in data) {
-                  if (data[vehicleId].length > 1) {
-                    var busPath = [];
-                    data[vehicleId].forEach(function (position) {
-                      busPath.push({ lat: position.latitude, lng: position.longitude });
-                    });
-
-                    var line = new google.maps.Polyline({
-                      path: busPath,
-                      strokeColor: '#FF00FF',
-                      strokeOpacity: 1.0,
-                      strokeWeight: 1.5
-                    });
-                    if (vehicles[vehicleId].line) {
-                      vehicles[vehicleId].line.setMap(null);
-                    }
-                    line.setMap(map);
-                    vehicles[vehicleId].line = line;
-                  }
-                }
-              }, 500);
             }
           });
         };
@@ -274,20 +289,10 @@
         setInterval(updatePositions, 5000);
 
         var updateTimer = function() {
-          if (last_update) {
-            var seconds_since = Math.round(+(new Date()) / 1000) - last_update;
-            var expected = 30 - seconds_since;
-            if (expected <= 0) {
-              $("#update_timer").text('now');
-            } else {
-              $("#update_timer").text(expected + 's');
-            }
-            if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
-              info_window.setContent(vehicles[info_window._vehicleId].getInfo());
-            }
+          if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
+            info_window.setContent(vehicles[info_window._vehicleId].getInfo());
           }
         };
-        updateTimer();
         setInterval(updateTimer, 1000);
       }
       initMap();
