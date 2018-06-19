@@ -118,12 +118,12 @@
             url: 'bus-marker.svg',
             scaledSize: new google.maps.Size(18, 24)
           },
-          labelContent: this.getLabel(),
+          labelContent: this.getRouteNumber(),
           labelAnchor: new google.maps.Point(10, 34),
           labelClass: "bus-label",
           labelStyle: { backgroundColor: this.getColor() },
           labelInBackground: true,
-          title: this.getTitle(),
+          title: this.getRouteName(),
           position: new google.maps.LatLng(this.latitude, this.longitude)
         });
         this.marker.setMap(this.map);
@@ -139,9 +139,9 @@
         this.route = data.route;
 
         this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
-        this.marker.set("labelContent", this.getLabel());
+        this.marker.set("labelContent", this.getRouteNumber());
         this.marker.set("labelStyle", { backgroundColor: this.getColor() });
-        this.marker.setTitle(this.getTitle());
+        this.marker.setTitle(this.getRouteName());
 
         this.updateHistory(history);
       };
@@ -176,37 +176,40 @@
         }
       };
 
-      Vehicle.prototype.getLabel = function() {
-        return this.route ? this.route.short_name : '??';
-      };
-
-      Vehicle.prototype.getTitle = function() {
-        return this.route ? this.route.long_name : 'No trip/route info for this bus';
-      };
-
       Vehicle.prototype.getColor = function (color) {
         return '#' + (this.route ? this.route.color : 'aaaaaa');
       };
 
+      Vehicle.prototype.getAge = function() {
+        return Math.round(+(new Date())/1000 - this.last_report);
+      }
+
+      Vehicle.prototype.getDirection = function() {
+        return ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][Math.round(this.bearing / 45)];
+      }
+
+      Vehicle.prototype.getRouteNumber = function() {
+        return this.route ? this.route.short_name : '??';
+      }
+
+      Vehicle.prototype.getRouteName = function() {
+        return this.route ? this.route.long_name : '(no route)';
+      }
+
       Vehicle.prototype.getInfo = function() {
-        var age = Math.round(+(new Date())/1000 - this.last_report);
-
-        var direction = Math.round(this.bearing / 45);
-        direction = ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][direction];
-
-        var info = "";
-        if (this.route) {
-          info += "<h3><span class='bus-route-number' style='background-color: " + this.getColor() + ";'>" + this.route.short_name + "</span> " + this.route.long_name + "</h3>";
-        } else {
-          info += "<h3><span class='bus-route-number' style='background-color: " + this.getColor() + ";'>??</span> No route</h3>";
-        }
-        info += "<p>";
-        if (direction) info += "<strong>Bearing:</strong> " + direction + "<br>";
-        if (this.route) info += "<strong>Headsign:</strong> " + this.route.headsign + "<br>";
-        info += "<strong>Last report:</strong> " + age + " seconds ago";
-        info += "</p>";
-
-        return info;
+        return (
+          "<h3>" +
+            "<span class='bus-route-number' style='background-color: " + this.getColor() + ";'>" +
+              this.getRouteNumber() +
+            "</span> " +
+            this.getRouteName() +
+          "</h3>" +
+          "<p>" +
+            (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + "<br>" : "") +
+            (this.route ? "<strong>Headsign:</strong> " + this.route.headsign + "<br>" : "") +
+            "<strong>Last report:</strong> " + this.getAge() + " seconds ago" +
+          "</p>"
+        );
       };
 
       function initMap() {
