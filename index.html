@@ -34,6 +34,10 @@
         margin: 0;
       }
 
+      .bus-label-hidden {
+        display: none;
+      }
+
       .bus-route-number {
         display: inline-block;
         text-shadow: 0 0 1px #ddd;
@@ -44,6 +48,15 @@
         padding-left: 5px;
         padding-right: 5px;
         margin-right: 5px;
+      }
+
+      .status-stale {
+        color: #f70;
+      }
+
+      .status-dormant {
+        font-weight: bold;
+        color: red;
       }
 
       /* https://github.com/tholman/github-corners */
@@ -128,6 +141,7 @@
         });
         this.marker.setMap(this.map);
 
+        this.updateStatus();
         this.updateHistory(history);
       }
 
@@ -139,10 +153,11 @@
         this.route = data.route;
 
         this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
-        this.marker.set("labelContent", this.getRouteNumber());
+        if (this.status != 'dormant') this.marker.set("labelContent", this.getRouteNumber());
         this.marker.set("labelStyle", { backgroundColor: this.getColor() });
         this.marker.setTitle(this.getRouteName());
 
+        this.updateStatus();
         this.updateHistory(history);
       };
 
@@ -171,8 +186,34 @@
             strokeOpacity: 1.0,
             strokeWeight: 1.0
           });
-          line.setMap(this.map);
+          if (this.status != 'dormant') line.setMap(this.map);
           this.history_line.push(line);
+        }
+      };
+
+      Vehicle.prototype.updateStatus = function() {
+        if (this.getAge() >= 150) {
+          if (this.status != 'dormant') {
+            this.status = 'dormant';
+            this.marker.setIcon({url: 'gravestone.svg', scaledSize: new google.maps.Size(18, 24)});
+            this.marker.set("labelContent", "");
+            this.marker.set("labelClass", "bus-label-hidden");
+            (this.history_line || []).forEach(function (line) { line.setMap(null); });
+          }
+        } else if (this.getAge() >= 75) {
+          if (this.status != 'stale') {
+            this.status = 'stale';
+            this.marker.setIcon({url: 'bus-marker-grey.svg', scaledSize: new google.maps.Size(18, 24)});
+            this.marker.set("labelContent", this.getRouteNumber());
+            this.marker.set("labelClass", "bus-label");
+            (this.history_line || []).forEach(function (line) { line.setMap(map); });
+          }
+        } else if (this.status != 'fresh') {
+          this.status = 'fresh';
+          this.marker.setIcon({url: 'bus-marker.svg', scaledSize: new google.maps.Size(18, 24)});
+          this.marker.set("labelContent", this.getRouteNumber());
+          this.marker.set("labelClass", "bus-label");
+          (this.history_line || []).forEach(function (line) { line.setMap(map); });
         }
       };
 
@@ -207,7 +248,7 @@
           "<p>" +
             (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + "<br>" : "") +
             (this.route ? "<strong>Headsign:</strong> " + this.route.headsign + "<br>" : "") +
-            "<strong>Last report:</strong> " + this.getAge() + " seconds ago" +
+            "<strong>Last report:</strong> <span class='status-" + this.status + "'>" + this.getAge() + " seconds ago</span>" +
           "</p>"
         );
       };
@@ -292,11 +333,15 @@
         setInterval(updatePositions, 5000);
 
         var updateTimer = function() {
+          for (var vehicleId in vehicles) {
+            vehicles[vehicleId].updateStatus();
+          }
           if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
             info_window.setContent(vehicles[info_window._vehicleId].getInfo());
           }
+          setTimeout(updateTimer, 1000);
         };
-        setInterval(updateTimer, 1000);
+        updateTimer();
       }
       initMap();
     </script>
