@@ -58,12 +58,18 @@ foreach ($feed->getEntityList() as $entity) {
         'timestamp' => $vehicle->getTimestamp(),
       ]);
       $vehicles[$id] = array_slice($vehicles[$id], 0, 5);
+      for ($i = 1; $i < count($vehicles[$id]); $i++) {
+        if ($vehicles[$id][$i-1]['timestamp'] - $vehicles[$id][$i]['timestamp'] > 150) {
+          $vehicles[$id] = array_slice($vehicles[$id], 0, $i);
+          break;
+        }
+      }
     }
   }
 }
 
 foreach (array_keys($vehicles) as $id) {
-  if ($vehicles[$id][0]['timestamp'] < time() - 150) {
+  if ($vehicles[$id][0]['timestamp'] < time() - 1800) {
     unset($vehicles[$id]);
   }
 }
