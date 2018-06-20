@@ -40,4 +40,3 @@ In addition to latitude and longitude, we also get the bearing (direction the bu
 * Display (and maybe zoom into) your location
 * Better browser compatibility?
 * Look for low-hanging performance improvements
-* Too many X's linger for too long (especially with how they get in the way of active buses on the map)

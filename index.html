@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Saskatoon Live Bus Map - Buskatoon</title>
+    <title>Buskatoon - Saskatoon Live Bus Map</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <style>
-      /* Always set the map height explicitly to define the size of the div
-       * element that contains the map. */
       #map {
         height: 100%;
       }
-      /* Optional: Makes the sample page fill the window. */
+
       html, body {
         height: 100%;
         margin: 0;
@@ -195,7 +193,7 @@
         if (this.getAge() >= 150) {
           if (this.status != 'dormant') {
             this.status = 'dormant';
-            this.marker.setIcon({url: 'gravestone.svg', scaledSize: new google.maps.Size(18, 24)});
+            this.marker.setIcon({url: 'gravestone.svg', scaledSize: new google.maps.Size(9, 12)});
             this.marker.set("labelContent", "");
             this.marker.set("labelClass", "bus-label-hidden");
             (this.history_line || []).forEach(function (line) { line.setMap(null); });
