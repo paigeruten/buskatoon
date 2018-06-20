@@ -38,6 +38,6 @@ In addition to latitude and longitude, we also get the bearing (direction the bu
 ## TODO
 
 * Display (and maybe zoom into) your location
-* Show your current location
 * Better browser compatibility?
-* Use webpack or something instead of loading JS libraries from various CDNs?
+* Look for low-hanging performance improvements
+* Too many X's linger for too long (especially with how they get in the way of active buses on the map)
