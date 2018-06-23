@@ -1,4 +1,5 @@
 vendor/
 vehicle_positions.json
+outages.log
 *.sqlite3
 .tags

@@ -8,10 +8,14 @@ $SCRIPT_PATH = realpath(dirname(__FILE__));
 
 $DB_FILE = "$SCRIPT_PATH/buskatoon.sqlite3";
 $JSON_FILE = $argv[1] ?? "$SCRIPT_PATH/vehicle_positions.json";
+$OUTAGE_LOG_FILE = "$SCRIPT_PATH/outages.log";
 
+$current_outage = 0;
 $vehicles = [];
 if (file_exists($JSON_FILE)) {
-  $vehicles = json_decode(file_get_contents($JSON_FILE), true);
+  $data = json_decode(file_get_contents($JSON_FILE), true);
+  $current_outage = $data['outage'];
+  $vehicles = $data['vehicles'];
 }
 
 $data = file_get_contents("http://apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb");
@@ -20,6 +24,13 @@ if ($data === false) {
 }
 $feed = new FeedMessage();
 $feed->parse($data);
+
+if (empty($feed->getEntityList()) && !$current_outage) {
+  $current_outage = time();
+} elseif (!empty($feed->getEntityList()) && $current_outage) {
+  file_put_contents($OUTAGE_LOG_FILE, "$current_outage " . time() . "\n");
+  $current_outage = 0;
+}
 
 $db = new PDO("sqlite:$DB_FILE");
 
@@ -74,5 +85,8 @@ foreach (array_keys($vehicles) as $id) {
   }
 }
 
-$json = json_encode($vehicles);
+$json = json_encode([
+  'outage' => $current_outage,
+  'vehicle' => $vehicles
+]);
 file_put_contents($JSON_FILE, $json);

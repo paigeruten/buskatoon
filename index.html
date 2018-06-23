@@ -275,18 +275,18 @@
                 vehicles[vehicleId].alive = false;
               }
 
-              for (var vehicleId in data) {
-                var vehicle_data = data[vehicleId][0];
+              for (var vehicleId in data.vehicles) {
+                var vehicle_data = data.vehicles[vehicleId][0];
 
                 if (vehicles[vehicleId]) {
                   var vehicle = vehicles[vehicleId];
-                  vehicle.update(vehicle_data, data[vehicleId]);
+                  vehicle.update(vehicle_data, data.vehicles[vehicleId]);
                   vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
                     info_window.setContent(vehicle.getInfo());
                   }
                 } else {
-                  var vehicle = new Vehicle(vehicleId, vehicle_data, data[vehicleId], map);
+                  var vehicle = new Vehicle(vehicleId, vehicle_data, data.vehicles[vehicleId], map);
                   vehicle.alive = true;
 
                   vehicles[vehicleId] = vehicle;
