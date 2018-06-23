@@ -28,7 +28,11 @@ $feed->parse($data);
 if (empty($feed->getEntityList()) && !$current_outage) {
   $current_outage = time();
 } elseif (!empty($feed->getEntityList()) && $current_outage) {
-  file_put_contents($OUTAGE_LOG_FILE, "$current_outage " . time() . "\n");
+  file_put_contents(
+    $OUTAGE_LOG_FILE,
+    "$current_outage " . time() . "\n",
+    FILE_APPEND
+  );
   $current_outage = 0;
 }
 
