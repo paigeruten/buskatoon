@@ -87,6 +87,6 @@ foreach (array_keys($vehicles) as $id) {
 
 $json = json_encode([
   'outage' => $current_outage,
-  'vehicle' => $vehicles
+  'vehicles' => $vehicles
 ]);
 file_put_contents($JSON_FILE, $json);
