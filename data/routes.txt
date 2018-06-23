@@ -1,23 +1,103 @@
-entityid,route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
-2941084b-373c-4c61-966c-dcb7c5abe9ea,6199,,1,Wildwood / Westview,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route01.pdf,FF00FF,FFFFFF
-ed191f39-dcb8-46f1-a0f6-3bfa97dd0319,6200,,2,8th Street / Meadowgreen,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route02.pdf,8000,FFFFFF
-46fc0f9a-9e3b-4061-bb22-640d8d478e07,6201,,3,College Park / Riversdale,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route03.pdf,80,FFFFFF
-bd9a100d-33cb-4c8b-8b54-0b1d2ef4cadb,6202,,4,Willowgrove Sq / Blairmore,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route04.pdf,800080,FFFFFF
-28bf11b7-f515-4ceb-be8c-ce0bcc6bd448,6203,,5,Briarwood / Fairhaven,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route05.pdf,00FF00,FFFFFF
-5c5330ad-3c3c-4cc4-bc3c-680c2b264f2a,6204,,6,Broadway / Market Mall,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route06.pdf,FF0080,FFFFFF
-0b436588-a051-4910-8eb6-45e83c2a0f66,6205,,11,Mayfair / Exhibition,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route11.pdf,00FF80,FFFFFF
-480b610d-3705-4a77-85cb-01649feb4d89,6206,,12,River Heights / City Centre,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route12.pdf,800000,FFFFFF
-e5b658c4-32ae-4396-a15a-f686c3294c6e,6207,,13,Lawson Heights / Broadway,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route13.pdf,FF8000,FFFFFF
-46f30d78-5c0b-4da0-9054-63e51bd8575a,6208,,14,North Industrial / City Centre,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route14.pdf,0000FF,FFFFFF
-0f47bc56-645d-4d68-a62b-c04de6121534,6209,,17,Market Mall / Stonebridge,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route17.pdf,8080C0,FFFFFF
-65de3092-46a5-4e60-ac81-a5fbe162119f,6210,,21,Forest Grove / University,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route21.pdf,00FFFF,FFFFFF
-e36c8db0-29c3-4aa5-be4e-f8253d79aeb9,6211,,22,City Centre / McCormack,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route22.pdf,8000FF,FFFFFF
-16b254fa-6245-4816-bbf4-c9e4dd11301d,6212,,23,Hampton Village / Montgomery,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route23.pdf,804040,FFFFFF
-00855d40-f5a3-4208-ba6f-0598db91883e,6213,,25,Lawson / Credit Union Centre,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route25.pdf,FF8000,FFFFFF
-859ed059-3796-45e3-af47-799b2b4205aa,6214,,28,Willowgrove Sq/Forest Gr/University,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route28.pdf,FF8000,FFFFFF
-4d637c10-d7f6-4659-b74d-9b2baa90b1de,6244,,40,Airport / City Centre,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route40.pdf,FF0080,FFFFFF
-5327d973-7359-4bdd-a836-bae3fc050a85,6245,,50,Lakeview / Pacific Heights,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route50.pdf,8080,FFFFFF
-5cc16f7c-00ab-472f-a188-09451f920df7,6262,,60,Lakeridge / Confederation,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route60.pdf,60006,FFFFFF
-49cbe5d7-ea73-43b0-a778-be34515fdefc,6263,,70,Silverspring / Lawson Heights,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route70.pdf,0000FF,FFFFFF
-dbbed06d-7abf-4518-afe3-a644eaa7225c,6264,,80,Kenderdine / Silverwood,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route80.pdf,FF80C0,FFFFFF
-30575b95-9e68-4856-b9af-d91279578804,6265,,90,Lakewood / Sutherland,,3,http://www.saskatoon.ca/DEPARTMENTS/Utility%20Services/Saskatoon%20Transit/Documents/Route90.pdf,FF80C0,FFFFFF
+route_long_name,route_type,route_text_color,route_color,agency_id,route_id,route_url,route_desc,route_short_name
+Lakeridge/ University,3,000000,FF8000,,10065,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,55
+Lawson Heights / City Centre,3,000000,FFCCCC,,10108,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,30
+University / Confederation,3,000000,D1C85D,,10105,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,22
+University,3,000000,4863E5,,10104,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,21
+Willowgrove Sq/Silverspring,3,000000,06EACE,,10107,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,28
+Sasktel  Centre,3,000000,ED0874,,10106,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,25
+Kenderdine DT Express,3,000000,3C204E,,10101,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,180
+College Park / University,3,000000,FF8000,,10100,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,18
+South Industrial / City Centre,3,000000,C1C0E1,,10103,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,20
+City Centre / Centre Mall,3,000000,672E82,,10102,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,19
+Sasktel Centre / North Ind,3,000000,000000,,10059,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,514
+Lakeview / University,3,000000,FF8000,,10052,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,50
+Kenderdine / City Centre,3,000000,A47CC1,,10051,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,45
+Evergreen / City Centre,3,000000,96D5CC,,10050,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,40
+Holy Cross,3,000000,FF8000,,10118,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,332
+Oskayak & Nutana,3,000000,FF8000,,10117,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,325
+"Bedford, Feehan & Royal",3,000000,FF8000,,10115,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,315
+"Cross, Murray & Bowman",3,000000,FF8000,,10113,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,311
+St Joseph,3,000000,FF8000,,10048,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,352
+Bishop Murray,3,000000,FF0000,,10049,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,358
+"Bedford, Feehan & Royal",3,000000,FF8000,,10040,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,315
+Oskayak & Nutana,3,000000,FF8000,,10042,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,325
+Holy Cross,3,000000,FF8000,,10043,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,332
+Aden Bowman,3,000000,FF8000,,10045,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,336
+Cross & Murray,3,000000,FF8000,,10046,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,338
+Silverwood / City Centre,3,000000,F48FA8,,10047,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,35
+St Joseph,3,000000,FF8000,,10123,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,352
+Silverwood / City Centre,3,000000,F48FA8,,10122,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,35
+Cross & Murray,3,000000,FF8000,,10121,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,338
+Aden Bowman,3,000000,FF8000,,10120,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,336
+Lakeview / University,3,000000,FF8000,,10127,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,50
+Kenderdine / City Centre,3,000000,A47CC1,,10126,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,45
+Evergreen / City Centre,3,000000,96D5CC,,10125,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,40
+Bishop Murray,3,000000,FF0000,,10124,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,358
+Sasktel Centre / North Ind,3,000000,000000,,10134,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,514
+"Cross, Murray & Bowman",3,000000,FF8000,,10038,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,311
+Sasktel  Centre,3,000000,ED0874,,10031,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,25
+University / Confederation,3,000000,D1C85D,,10030,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,22
+Lawson Heights / City Centre,3,000000,FFCCCC,,10033,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,30
+Willowgrove Sq/Silverspring,3,000000,06EACE,,10032,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,28
+Lakeridge/ University,3,000000,FF8000,,10140,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,55
+City Centre / Blairmore,3,000000,FF8000,,10147,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,61
+City Centre / Confederation,3,000000,359E30,,10146,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,60
+City Centre / Hampton Village,3,000000,FF8000,,10149,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,63
+City Centre / Montgomery,3,000000,FF8000,,10148,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,62
+South Industrial / City Centre,3,000000,C1C0E1,,10028,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,20
+University,3,000000,4863E5,,10029,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,21
+Kenderdine DT Express,3,000000,3C204E,,10026,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,180
+City Centre / Centre Mall,3,000000,672E82,,10027,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,19
+Stonebridge / University,3,000000,FF8000,,10024,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,17
+College Park / University,3,000000,FF8000,,10025,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,18
+North Industrial / City Centre,3,000000,9EC149,,10022,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,14
+City Centre / Civic Op Centre,3,000000,FF8000,,10023,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,15
+River Heights / Airport,3,000000,42D160,,10020,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,12
+Lawson Heights / Broadway,3,000000,72C1DD,,10021,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,13
+Main Street / Centre Mall,3,000000,FF8000,,10152,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,82
+Centre Mall / Stonebridge,3,000000,FF8000,,10153,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,83
+City Centre / Kensington,3,000000,FFFF99,,10150,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,65
+Cumberland / Centre Mall,3,000000,FF8000,,10151,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,81
+Briarwood / Centre Mall,3,000000,FF8000,,10154,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,84
+Rosewood / Centre Mall,3,000000,FF8000,,10155,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,86
+Willowgrove DT Express,3,000000,96E0EA,,10019,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,104
+University Direct 2,3,000000,FF8000,,10018,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,102
+Dundonald / City Centre,3,000000,3FA89B,,10013,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,07
+Broadway / Market Mall,3,000000,8F9336,,10012,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,06
+City Centre/ McCormack,3,000000,EE4F9C,,10011,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,05
+Willowgrove Sq / Mayfair,3,000000,8AB0DD,,10010,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,04
+University Direct 1,3,000000,FF8000,,10017,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,101
+Meadowgreen / City Centre,3,000000,811E1E,,10016,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,10
+Riversdale / City Centre,3,000000,006480,,10015,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,09
+8th Street / City Centre,3,000000,FF8000,,10014,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,08
+University Direct 2,3,000000,FF8000,,10093,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,102
+University Direct 1,3,000000,FF8000,,10092,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,101
+Meadowgreen / City Centre,3,000000,811E1E,,10091,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,10
+Riversdale / City Centre,3,000000,006480,,10090,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,09
+North Industrial / City Centre,3,000000,9EC149,,10097,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,14
+Lawson Heights / Broadway,3,000000,72C1DD,,10096,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,13
+River Heights / Airport,3,000000,42D160,,10095,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,12
+Willowgrove DT Express,3,000000,96E0EA,,10094,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,104
+Stonebridge / University,3,000000,FF8000,,10099,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,17
+City Centre / Civic Op Centre,3,000000,FF8000,,10098,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,15
+City Centre / Exhibition,3,000000,A21F6C,,10007,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,01
+Meadowgreen / City Centre,3,000000,423889,,10008,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,02
+City Centre / Hudson Bay Park,3,000000,36B274,,10009,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,03
+Dundonald / City Centre,3,000000,3FA89B,,10088,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,07
+8th Street / City Centre,3,000000,FF8000,,10089,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,08
+City Centre / Hudson Bay Park,3,000000,36B274,,10084,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,03
+Willowgrove Sq / Mayfair,3,000000,8AB0DD,,10085,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,04
+City Centre/ McCormack,3,000000,EE4F9C,,10086,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,05
+Broadway / Market Mall,3,000000,8F9336,,10087,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,06
+Rosewood / Centre Mall,3,000000,FF8000,,10080,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,86
+City Centre / Exhibition,3,000000,A21F6C,,10082,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,01
+Meadowgreen / City Centre,3,000000,423889,,10083,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,02
+City Centre / Confederation,3,000000,359E30,,10071,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,60
+City Centre / Montgomery,3,000000,FF8000,,10073,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,62
+City Centre / Blairmore,3,000000,FF8000,,10072,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,61
+City Centre / Kensington,3,000000,FFFF99,,10075,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,65
+City Centre / Hampton Village,3,000000,FF8000,,10074,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,63
+Main Street / Centre Mall,3,000000,FF8000,,10077,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,82
+Cumberland / Centre Mall,3,000000,FF8000,,10076,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,81
+Briarwood / Centre Mall,3,000000,FF8000,,10079,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,84
+Centre Mall / Stonebridge,3,000000,FF8000,,10078,https://transit.saskatoon.ca/2016-route-change/2016-schedules-and-routes,,83
