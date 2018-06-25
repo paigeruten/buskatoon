@@ -59,24 +59,26 @@
 
       #warning-bar {
         position: fixed;
-        bottom: 5px;
+        bottom: -50px;
         left: 0;
         right: 0;
         margin: 0 auto;
         z-index: 1000;
         text-align: center;
+        transition: bottom 0.3s ease;
       }
 
       #warning-bar > span {
         display: inline-block;
-        color: #a00;
-        background-color: #fee;
-        padding: 2px 5px;
-        border: 1px solid #a00;
+        color: #666;
+        background-color: #fff;
+        padding: 4px 7px;
+        border-radius: 10px;
+        box-shadow: 1px 2px 0 #ccc;
       }
 
-      .hide-warning-bar {
-        display: none;
+      #warning-bar.show-warning-bar {
+        bottom: 10px;
       }
 
       /* https://github.com/tholman/github-corners */
@@ -126,7 +128,7 @@
       </svg>
     </a>
     <div id="map"></div>
-    <div id="warning-bar"><span>⚠ This is a warning.</span></div>
+    <div id="warning-bar"><span></span></div>
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/jquery.easing.1.3.js"></script>
@@ -295,6 +297,13 @@
             dataType: "json",
             context: document.body,
             success: function(data) {
+              if (data.outage) {
+                $('#warning-bar > span').text("⚠️ No buses are reporting their positions at the moment.");
+                $('#warning-bar').addClass('show-warning-bar');
+              } else {
+                $('#warning-bar').removeClass('show-warning-bar');
+              }
+
               for (var vehicleId in vehicles) {
                 vehicles[vehicleId].alive = false;
               }
@@ -348,6 +357,10 @@
                   delete vehicles[vehicleId];
                 }
               }
+            },
+            error: function() {
+              $('#warning-bar > span').text("⚠️ Can't connect to server. Will keep retrying...");
+              $('#warning-bar').addClass('show-warning-bar');
             }
           });
         };
