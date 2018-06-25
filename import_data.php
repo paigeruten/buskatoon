@@ -7,6 +7,7 @@ if (file_exists($DB_FILE)) {
 }
 
 $db = new PDO("sqlite:$DB_FILE");
+$db->query('PRAGMA synchronous = OFF;');
 
 $db->exec('
   CREATE TABLE routes (
