@@ -223,7 +223,7 @@
         if (this.getAge() >= 150) {
           if (this.status != 'dormant') {
             this.status = 'dormant';
-            this.marker.setIcon({url: 'gravestone.svg', scaledSize: new google.maps.Size(9, 12)});
+            this.marker.setIcon({url: 'gravestone.png', scaledSize: new google.maps.Size(9, 12)});
             this.marker.set("labelContent", "");
             this.marker.set("labelClass", "bus-label-hidden");
             (this.history_line || []).forEach(function (line) { line.setMap(null); });
@@ -231,7 +231,7 @@
         } else if (this.getAge() >= 75) {
           if (this.status != 'stale') {
             this.status = 'stale';
-            this.marker.setIcon({url: 'bus-marker-grey.svg', scaledSize: new google.maps.Size(18, 24)});
+            this.marker.setIcon({url: 'bus-marker-grey.png', scaledSize: new google.maps.Size(18, 24)});
             this.marker.set("labelContent", this.getRouteNumber());
             this.marker.set("labelClass", "bus-label");
             (this.history_line || []).forEach(function (line) { line.setMap(map); });
