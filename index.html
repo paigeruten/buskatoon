@@ -283,8 +283,10 @@
 
       function initMap() {
         var map = new google.maps.Map(document.getElementById('map'), {
-          center: { lat: 52.133214, lng: -106.670046 },
-          zoom: 13
+          center: { lat: 52.133214, lng: -106.650046 },
+          zoom: 12,
+          disableDefaultUI: true,
+          zoomControl: true
         });
         var info_window = new google.maps.InfoWindow();
         info_window._vehicleId = null;
