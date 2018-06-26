@@ -156,7 +156,7 @@
 
         this.marker = new MarkerWithLabel({
           icon: {
-            url: 'bus-marker.svg',
+            url: 'bus-marker.png',
             scaledSize: new google.maps.Size(18, 24)
           },
           labelContent: this.getRouteNumber(),
@@ -238,7 +238,7 @@
           }
         } else if (this.status != 'fresh') {
           this.status = 'fresh';
-          this.marker.setIcon({url: 'bus-marker.svg', scaledSize: new google.maps.Size(18, 24)});
+          this.marker.setIcon({url: 'bus-marker.png', scaledSize: new google.maps.Size(18, 24)});
           this.marker.set("labelContent", this.getRouteNumber());
           this.marker.set("labelClass", "bus-label");
           (this.history_line || []).forEach(function (line) { line.setMap(map); });
