@@ -226,7 +226,7 @@
             scaledSize: new google.maps.Size(18, 24)
           },
           labelContent: this.getRouteNumber(),
-          labelAnchor: new google.maps.Point(10, 34),
+          labelAnchor: new google.maps.Point(10, 24),
           labelClass: "bus-label",
           labelStyle: { backgroundColor: this.getColor() },
           labelInBackground: true,
@@ -289,7 +289,7 @@
         if (this.getAge() >= 150) {
           if (this.status != 'dormant') {
             this.status = 'dormant';
-            this.marker.setIcon({url: 'gravestone.png', scaledSize: new google.maps.Size(9, 12)});
+            this.marker.setIcon({url: 'gravestone.png', scaledSize: new google.maps.Size(10, 10), anchor: new google.maps.Point(5, 5)});
             this.marker.set("labelContent", "");
             this.marker.set("labelClass", "bus-label-hidden");
             (this.history_line || []).forEach(function (line) { line.setMap(null); });
@@ -429,7 +429,7 @@
                     });
                   }
                   delete vehicles[vehicleId];
-                } else {
+                } else if (vehicles[vehicleId].status != 'dormant') {
                   busCount++;
                 }
               }
