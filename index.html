@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-121650351-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-121650351-1');
+    </script>
+
     <title>Buskatoon - Saskatoon Live Bus Map</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
     <meta charset="utf-8">
@@ -24,6 +33,14 @@
 
       h1 {
         margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 10px;
+      }
+
+      a {
+        color: blue;
       }
 
       .bus-label {
@@ -100,11 +117,37 @@
         border-radius: 10px;
         box-shadow: 1px 2px 0 #ccc;
         padding: 15px;
+        overflow: auto;
       }
 
       #about.show-about {
         opacity: 1.0;
         z-index: 1000;
+      }
+
+      .marker-legend {
+        display: flex;
+        margin-bottom: 5px;
+      }
+
+      .marker-legend .marker-example {
+        width: 32px;
+        text-align: center;
+      }
+
+      #bus-marker-example {
+        margin-top: 10px;
+      }
+
+      #bus-marker-example .marker-example,
+      #bus-marker-grey-example .marker-example {
+        position: relative;
+        top: -4px;
+      }
+
+      #gravestone-example .marker-example {
+        position: relative;
+        top: 0;
       }
 
       #warning-bar {
@@ -113,7 +156,7 @@
         left: 0;
         right: 0;
         margin: 0 auto;
-        z-index: 1000;
+        z-index: 999;
         text-align: center;
         transition: bottom 0.3s ease;
       }
@@ -163,14 +206,20 @@
         }
       }
 
-      @media (max-width: 500px) {
-        .github-corner {
-          display: none;
+      @media (max-width: 800px) {
+        #about {
+          top: 0;
+          width: 100%;
+        }
+
+        #about #about-content {
+          height: 95vh;
         }
 
         #warning-bar > span {
           font-size: 12px;
         }
+      }
     </style>
   </head>
   <body>
@@ -192,7 +241,34 @@
 
         <h1>Buskatoon</h1>
 
-        <p>It's Buskatoon! A live bus map of Saskatoon!</p>
+        <p>&hellip;is a live bus map of <a href="https://en.wikipedia.org/wiki/Saskatoon">Saskatoon</a>.</p>
+
+        <p>Feel free to email any feedback to <a href="mailto:jeremy.ruten@gmail.com"><code>jeremy.ruten@gmail.com</code></a>.</p>
+
+        <h3>Legend</h3>
+
+        <div class="marker-legend" id="bus-marker-example">
+          <div class="marker-example"><img src="bus-marker.png" width="18" height="24"></div>
+          <div class="marker-desc">Bus that reported its location in the last <strong>75 seconds</strong>.</div>
+        </div>
+
+        <div class="marker-legend" id="bus-marker-grey-example">
+          <div class="marker-example"><img src="bus-marker-grey.png" width="18" height="24"></div>
+          <div class="marker-desc">Bus that last reported its location <strong>75&ndash;150 seconds ago</strong>.</div>
+        </div>
+
+        <div class="marker-legend" id="gravestone-example">
+          <div class="marker-example"><img src="gravestone.png" width="10" height="10"></div>
+          <div class="marker-desc">Bus that hasn't reported its location for more than <strong>150 seconds</strong> (will be removed after 30 minutes).</div>
+        </div>
+
+        <h3>Notes</h3>
+
+        <p>Buses seem to report their location about every <strong>30 seconds</strong>. Those location reports take at least <strong>20 seconds</strong> to get to us. So bus locations shown will generally be <strong>20&ndash;50 seconds out of date</strong> at any given time. You can see precisely how out of date a bus's location is by clicking on it.</p>
+
+        <p>The last 5 location reports of each bus are shown as a series of arrows behind the bus.</p>
+
+        <p><strong>[<a href="#" id="about-close">back to map</a>]</strong></p>
       </div>
     </div>
     <div id="warning-bar"><span></span></div>
@@ -210,6 +286,11 @@
     <script>
       $("#about-link").click(function(e) {
         $("#about").addClass("show-about");
+        e.preventDefault();
+      });
+
+      $("#about-close").click(function(e) {
+        $("#about").removeClass("show-about");
         e.preventDefault();
       });
 
