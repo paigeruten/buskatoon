@@ -74,6 +74,7 @@ foreach ($feed->getEntityList() as $entity) {
       ]);
       $vehicles[$id] = array_slice($vehicles[$id], 0, 5);
       for ($i = 1; $i < count($vehicles[$id]); $i++) {
+        unset($vehicles[$id][$i]['route']);
         if ($vehicles[$id][$i-1]['timestamp'] - $vehicles[$id][$i]['timestamp'] > 150) {
           $vehicles[$id] = array_slice($vehicles[$id], 0, $i);
           break;
