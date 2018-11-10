@@ -270,7 +270,10 @@
 
         <p>If there are no buses reporting, and the sun is up, then there may be an outage of live data on saskatoon.ca's side. These seem pretty uncommon, but do happen.</p>
 
-        <p><strong>[<a href="#" id="about-close">back to map</a>]</strong></p>
+        <p>
+          <button id="about-close"><strong>&larr; Back to map</strong></button>
+          <button id="about-pin">Get link to current view of map</button>
+        </p>
       </div>
     </div>
     <div id="warning-bar"><span></span></div>
@@ -433,9 +436,22 @@
       };
 
       function initMap() {
+        var latParam, lngParam, zoomParam;
+
+        if (typeof URL === 'function') {
+          var url = new URL(window.location.href);
+          latParam = url.searchParams.get('lat');
+          lngParam = url.searchParams.get('lng');
+          zoomParam = url.searchParams.get('zoom');
+        }
+
+        var lat = latParam || 52.133214;
+        var lng = lngParam || -106.650046;
+        var zoom = zoomParam || 12;
+
         var map = new google.maps.Map(document.getElementById('map'), {
-          center: { lat: 52.133214, lng: -106.650046 },
-          zoom: 12,
+          center: { lat: Number(lat), lng: Number(lng) },
+          zoom: Number(zoom),
           disableDefaultUI: true,
           zoomControl: true
         });
@@ -445,6 +461,19 @@
         google.maps.event.addListener(map, "click", function (event) {
           info_window.close();
           $("#about").removeClass("show-about");
+        });
+
+        $("#about-pin").click(function(e) {
+          if (typeof URL === 'function') {
+            var url = new URL(window.location.href);
+            url.searchParams.set('lat', map.center.lat());
+            url.searchParams.set('lng', map.center.lng());
+            url.searchParams.set('zoom', map.zoom);
+            window.location.href = url;
+          } else {
+            alert("Sorry, this doesn't work in the browser you are using.");
+          }
+          e.preventDefault();
         });
 
         var vehicles = {};
