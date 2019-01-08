@@ -1,8 +1,8 @@
 <?php
 
 $DB_FILE = 'buskatoon.sqlite3';
-$ROUTES_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitRoutes/';
-$TRIPS_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitTrips/';
+$ROUTES_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitRoutes4/';
+$TRIPS_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitTrips4/';
 
 if (file_exists($DB_FILE)) {
   unlink($DB_FILE);
