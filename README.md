@@ -34,3 +34,14 @@ $ open index.html
 Each bus reports its GPS location every 20-30 seconds. The [Saskatoon Transit Real Time Data Feed](https://www.saskatoon.ca/moving-around/transit/open-data-saskatoon-transit) makes these location reports available to us at [apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb](http://apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb). This feed also seems to only update every 20-30 seconds itself, so the bus locations we get are always 20-30 seconds out of date.
 
 In addition to latitude and longitude, we also get the bearing (direction the bus is facing, which seems to always be a multiple of 45) and the trip id. The trip id can be looked up in the [Saskatoon Open Data Catalogue](http://opendata-saskatoon.cloudapp.net/DataBrowser/SaskatoonOpenDataCatalogueBeta/TransitTrips#param=NOFILTER--DataView--Results) to get the bus's headsign (like "Centre Mall via Lorne") and route id. The route id can then be [looked up](http://opendata-saskatoon.cloudapp.net/DataBrowser/SaskatoonOpenDataCatalogueBeta/TransitRoutes#param=NOFILTER--DataView--Results) to get the route number (like "8") and route name (like "8th Street / City Centre").
+
+## How to update the data
+
+1. Download http://apps2.saskatoon.ca/app/data/google_transit.zip
+2. Copy `routes.txt` and `trips.txt` into this repo's `data/` folder
+3. Run `php import_csv.php`
+4. `scp buskatoon.sqlite3 buskatoon.ca:~/bin/`
+5. `ssh buskatoon.ca` and `rm /srv/www/buskatoon.ca/vehicle_positions.json`
+
+(One day I will automate this...)
+
