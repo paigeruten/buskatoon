@@ -70,6 +70,7 @@ foreach ($feed->getEntityList() as $entity) {
         'latitude' => $position->getLatitude(),
         'longitude' => $position->getLongitude(),
         'bearing' => $position->getBearing() ?? 0,
+        'speed' => $position->getSpeed(),
         'timestamp' => $vehicle->getTimestamp(),
       ]);
       $vehicles[$id] = array_slice($vehicles[$id], 0, 5);

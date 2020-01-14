@@ -1,6 +1,8 @@
 {
   "require": {
-      "google/gtfs-realtime-bindings": "0.0.2",
+      "google/gtfs-realtime-bindings": "0.0.2"
+  },
+  "require-dev": {
     "psy/psysh": "@stable"
   }
 }

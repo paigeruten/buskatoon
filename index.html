@@ -280,8 +280,8 @@
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/jquery.easing.1.3.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js"></script>
-    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYt4GP7-fw4fFuwTGlfaiWhdRUBPujr-Q"></script> -->
+    <!-- <script src="https://maps.googleapis.com/maps/api/js"></script> -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYt4GP7-fw4fFuwTGlfaiWhdRUBPujr-Q"></script>
     <script src="js/markerAnimate.js"></script>
     <script src="js/SlidingMarker-0.2.8.min.js"></script>
     <script>
@@ -304,6 +304,7 @@
         this.longitude = data.longitude;
         this.latitude = data.latitude;
         this.bearing = data.bearing;
+        this.speed = data.speed;
         this.last_report = data.timestamp;
         this.route = data.route;
         this.map = map;
@@ -331,6 +332,7 @@
         this.longitude = data.longitude;
         this.latitude = data.latitude;
         this.bearing = data.bearing;
+        this.speed = data.speed;
         this.last_report = data.timestamp;
         this.route = data.route;
 
@@ -411,6 +413,14 @@
         return ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][Math.round(this.bearing / 45)];
       }
 
+      Vehicle.prototype.getSpeed = function() {
+        if (this.speed !== null) {
+          return '(' + Math.round(this.speed * 3.6) + ' km/h)';
+        } else {
+          return '';
+        }
+      }
+
       Vehicle.prototype.getRouteNumber = function() {
         return this.route ? this.route.short_name : '??';
       }
@@ -428,7 +438,7 @@
             this.getRouteName() +
           "</h3>" +
           "<p>" +
-            (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + "<br>" : "") +
+            (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + " " + this.getSpeed() + "<br>" : "") +
             (this.route ? "<strong>Headsign:</strong> " + this.route.headsign + "<br>" : "") +
             "<strong>Last report:</strong> <span class='status-" + this.status + "'>" + this.getAge() + " seconds ago</span>" +
           "</p>"
