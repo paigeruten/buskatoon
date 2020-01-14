@@ -145,9 +145,18 @@
         top: -4px;
       }
 
+      #you-are-here-example .marker-example {
+        position: relative;
+        top: -2px;
+      }
+
       #gravestone-example .marker-example {
         position: relative;
         top: 0;
+      }
+
+      #you-are-here-example {
+        margin-top: 15px;
       }
 
       #warning-bar {
@@ -262,6 +271,11 @@
           <div class="marker-desc">Bus that hasn't reported its location for more than <strong>150 seconds</strong> (will be removed after 30 minutes).</div>
         </div>
 
+        <div class="marker-legend" id="you-are-here-example">
+          <div class="marker-example"><img src="you_are_here.png" width="18" height="18"></div>
+          <div class="marker-desc">You are here! (Or were.)</div>
+        </div>
+
         <h3>Notes</h3>
 
         <p>Buses seem to report their location about every <strong>30 seconds</strong>. Those location reports take at least <strong>20 seconds</strong> to get to us. So bus locations shown will generally be <strong>20&ndash;50 seconds out of date</strong> at any given time. You can see precisely how out of date a bus's location is by clicking on it.</p>
@@ -280,8 +294,8 @@
 
     <script src="js/jquery-3.3.1.min.js"></script>
     <script src="js/jquery.easing.1.3.js"></script>
-    <!-- <script src="https://maps.googleapis.com/maps/api/js"></script> -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYt4GP7-fw4fFuwTGlfaiWhdRUBPujr-Q"></script>
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key="></script> -->
     <script src="js/markerAnimate.js"></script>
     <script src="js/SlidingMarker-0.2.8.min.js"></script>
     <script>
@@ -467,6 +481,22 @@
         });
         var info_window = new google.maps.InfoWindow();
         info_window._vehicleId = null;
+
+        if (navigator.geolocation) {
+          var you_are_here = new MarkerWithLabel({
+            icon: {
+              url: 'you_are_here.png',
+              scaledSize: new google.maps.Size(18, 18)
+            },
+            title: 'You are here! (Or were.)'
+          });
+
+          navigator.geolocation.watchPosition(function(position) {
+            var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+            you_are_here.setPosition(pos);
+            you_are_here.setMap(map);
+          });
+        }
 
         google.maps.event.addListener(map, "click", function (event) {
           info_window.close();
