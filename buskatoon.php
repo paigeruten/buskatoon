@@ -14,8 +14,8 @@ $current_outage = 0;
 $vehicles = [];
 if (file_exists($JSON_FILE)) {
   $data = json_decode(file_get_contents($JSON_FILE), true);
-  $current_outage = $data['outage'];
-  $vehicles = $data['vehicles'];
+  $current_outage = $data['outage'] ?? 0;
+  $vehicles = $data['vehicles'] ?? [];
 }
 
 $data = file_get_contents("http://apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb");
