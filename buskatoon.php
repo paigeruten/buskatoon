@@ -18,7 +18,7 @@ if (file_exists($JSON_FILE)) {
   $vehicles = $data['vehicles'] ?? [];
 }
 
-$data = file_get_contents("http://apps2.saskatoon.ca/app/data/Vehicle/VehiclePositions.pb");
+$data = file_get_contents("https://saskprdtmgtfs.sasktrpcloud.com/TMGTFSRealTimeWebService/Vehicle/VehiclePositions.pb");
 if ($data === false) {
   die("Failed to retrieve VehiclePositions.pb\n");
 }
