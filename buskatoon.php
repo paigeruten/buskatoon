@@ -1,5 +1,7 @@
 <?php
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+
 require_once 'vendor/autoload.php';
 
 use transit_realtime\FeedMessage;

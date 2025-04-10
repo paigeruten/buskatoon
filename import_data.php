@@ -1,8 +1,8 @@
 <?php
 
 $DB_FILE = 'buskatoon.sqlite3';
-$ROUTES_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitRoutes4/';
-$TRIPS_URL = 'http://opendata-saskatoon.cloudapp.net:8080/v1/SaskatoonOpenDataCatalogueBeta/TransitTrips4/';
+$ROUTES_URL = 'https://services2.arcgis.com/eJz9754Ox6TaFSC2/arcgis/rest/services/Transit_Routes/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson';
+$TRIPS_URL = 'https://services2.arcgis.com/eJz9754Ox6TaFSC2/arcgis/rest/services/Transit_Trips/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson';
 
 if (file_exists($DB_FILE)) {
   unlink($DB_FILE);
@@ -31,19 +31,17 @@ $db->exec('
 $sql = 'INSERT INTO routes (id, short_name, long_name, color) VALUES (:id, :short_name, :long_name, :color);';
 $stmt = $db->prepare($sql);
 echo "Retrieving $ROUTES_URL\n";
-$routes = simplexml_load_file($ROUTES_URL);
-foreach ($routes->entry as $route) {
-  $route = $route->content->children('m', true)->properties->children('d', true);
-
+$routes = json_decode(file_get_contents($ROUTES_URL));
+foreach ($routes->features as $route) {
   // Add missing leading 0 that the XML feed seems to chop off
-  $short_name = $route->route_short_name;
+  $short_name = (string)$route->properties->route_short_name;
   if (strlen($short_name) == 1) $short_name = "0$short_name";
 
   $stmt->execute([
-    ':id' => $route->route_id,
+    ':id' => $route->properties->route_id,
     ':short_name' => $short_name,
-    ':long_name' => $route->route_long_name,
-    ':color' => $route->route_color
+    ':long_name' => $route->properties->route_long_name,
+    ':color' => $route->properties->route_color
   ]);
 }
 
@@ -51,24 +49,20 @@ $sql = 'INSERT INTO trips (id, route_id, headsign) VALUES (:id, :route_id, :head
 $stmt = $db->prepare($sql);
 
 $trips_url = $TRIPS_URL;
+$limit = 1000;
+$offset = 0;
 do {
-  echo "Retrieving $trips_url\n";
-  $trips = simplexml_load_file($trips_url);
-  foreach($trips->getDocNamespaces() as $prefix => $namespace) {
-      if (empty($prefix)) $prefix = "global";
-      $trips->registerXPathNamespace($prefix, $namespace);
-  }
+  $trips_page_url = "$trips_url&resultRecordCount=$limit&resultOffset=$offset";
+  echo "Retrieving $trips_page_url\n";
+  $trips = json_decode(file_get_contents($trips_page_url));
 
-  foreach ($trips->entry as $trip) {
-    $trip = $trip->content->children('m', true)->properties->children('d', true);
-
+  foreach ($trips->features as $trip) {
     $stmt->execute([
-      ':id' => $trip->trip_id,
-      ':route_id' => $trip->route_id,
-      ':headsign' => $trip->trip_headsign
+      ':id' => $trip->properties->trip_id,
+      ':route_id' => $trip->properties->route_id,
+      ':headsign' => $trip->properties->trip_headsign
     ]);
   }
 
-  $next_link = $trips->xpath("global:link[@rel='next']");
-  $trips_url = empty($next_link) ? false : (string)$next_link[0]['href'];
-} while ($trips_url);
+  $offset += $limit;
+} while ($trips->properties->exceededTransferLimit ?? false);
