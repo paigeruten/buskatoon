@@ -46,7 +46,6 @@
       .bus-label {
         background-color: white;
         font-family: helvetica neue, Arial, sans-serif;
-        text-shadow: 0 0 1px #ddd;
         text-align: center;
         color: black;
         font-weight: bold;
@@ -65,7 +64,6 @@
 
       .bus-route-number {
         display: inline-block;
-        text-shadow: 0 0 1px #ddd;
         text-align: center;
         color: black;
         font-weight: bold;
@@ -330,7 +328,7 @@
           labelContent: this.getRouteNumber(),
           labelAnchor: new google.maps.Point(10, 34),
           labelClass: "bus-label",
-          labelStyle: { backgroundColor: this.getColor() },
+          labelStyle: { backgroundColor: this.getColor(), color: this.getTextColor() },
           labelInBackground: true,
           title: this.getRouteName(),
           position: new google.maps.LatLng(this.latitude, this.longitude)
@@ -351,7 +349,7 @@
 
         this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
         if (this.status != 'dormant') this.marker.set("labelContent", this.getRouteNumber());
-        this.marker.set("labelStyle", { backgroundColor: this.getColor() });
+        this.marker.set("labelStyle", { backgroundColor: this.getColor(), color: this.getTextColor() });
         this.marker.setTitle(this.getRouteName());
 
         this.updateStatus();
@@ -418,6 +416,15 @@
         return '#' + (this.route ? this.route.color : 'aaaaaa');
       };
 
+      Vehicle.prototype.getTextColor = function() {
+        var hex = this.getColor().replace('#', '');
+        var r = parseInt(hex.substr(0, 2), 16);
+        var g = parseInt(hex.substr(2, 2), 16);
+        var b = parseInt(hex.substr(4, 2), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? 'black' : 'white';
+      };
+
       Vehicle.prototype.getAge = function() {
         return Math.round(+(new Date())/1000 - this.last_report);
       }
@@ -442,14 +449,20 @@
         return this.route ? this.route.long_name : '(Unknown route)';
       }
 
-      Vehicle.prototype.getInfo = function() {
-        return (
+      Vehicle.prototype.getHeaderInfo = function() {
+        var div = document.createElement('div');
+        div.innerHTML =
           "<h3>" +
-            "<span class='bus-route-number' style='background-color: " + this.getColor() + ";'>" +
+            "<span class='bus-route-number' style='background-color: " + this.getColor() + "; color: " + this.getTextColor() + ";'>" +
               this.getRouteNumber() +
             "</span> " +
             this.getRouteName() +
-          "</h3>" +
+          "</h3>";
+        return div.firstChild;
+      };
+
+      Vehicle.prototype.getInfo = function() {
+        return (
           "<p>" +
             (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + " " + this.getSpeed() + "<br>" : "") +
             (this.route ? "<strong>Headsign:</strong> " + this.route.headsign + "<br>" : "") +
@@ -542,6 +555,7 @@
                   vehicle.update(vehicle_data, data.vehicles[vehicleId]);
                   vehicle.alive = true;
                   if (info_window._vehicleId == vehicleId) {
+                    info_window.setHeaderContent(vehicle.getHeaderInfo());
                     info_window.setContent(vehicle.getInfo());
                   }
                 } else {
@@ -553,6 +567,7 @@
                   (function (vehicle) {
                     vehicle.marker.addListener('click', function() {
                       info_window.close();
+                      info_window.setHeaderContent(vehicle.getHeaderInfo());
                       info_window.setContent(vehicle.getInfo());
                       info_window._vehicleId = vehicle.id;
                       info_window.open(map, vehicle.marker);
@@ -564,6 +579,7 @@
                   vehicle.history_line.forEach(function (line) {
                     line.addListener('click', function() {
                       info_window.close();
+                      info_window.setHeaderContent(vehicle.getHeaderInfo());
                       info_window.setContent(vehicle.getInfo());
                       info_window._vehicleId = vehicle.id;
                       info_window.open(map, vehicle.marker);
@@ -603,6 +619,7 @@
             vehicles[vehicleId].updateStatus();
           }
           if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
+            info_window.setHeaderContent(vehicles[info_window._vehicleId].getHeaderInfo());
             info_window.setContent(vehicles[info_window._vehicleId].getInfo());
           }
           setTimeout(updateTimer, 1000);
