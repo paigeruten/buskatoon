@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Buskatoon - Saskatoon Live Bus Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <script src="https://unpkg.com/maplibre-gl@5.21.1/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@5.21.1/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        function easeInOutQuad(x) {
+            return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+        }
+
+        const busFeaturesById = {};
+        const busPositions = {
+            type: 'FeatureCollection',
+            features: []
+        };
+
+        const saskatoonCenter = [-106.650046, 52.133214];
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://tiles.openfreemap.org/styles/bright',
+            center: saskatoonCenter,
+            zoom: 11,
+            maxBounds: [
+                [saskatoonCenter[0] - 0.7, saskatoonCenter[1] - 0.3],
+                [saskatoonCenter[0] + 0.7, saskatoonCenter[1] + 0.3],
+            ],
+            hash: true
+        });
+
+        map.addControl(
+          new maplibregl.NavigationControl(),
+          'top-left'
+        );
+
+        map.addControl(
+            new maplibregl.GeolocateControl({
+                positionOptions: {
+                    enableHighAccuracy: true
+                },
+                trackUserLocation: true
+            }),
+            'top-left'
+        );
+
+        map.on('load', async function() {
+            const busImage = await map.loadImage('bus-marker.png');
+            map.addImage('bus-marker', busImage.data);
+
+            map.addSource('buses', {
+                type: 'geojson',
+                data: busPositions
+            });
+
+            map.addLayer({
+                id: 'buses',
+                type: 'symbol',
+                source: 'buses',
+                layout: {
+                    'icon-overlap': 'always',
+                    'icon-image': 'bus-marker',
+                    'icon-size': 0.5,
+                    'icon-anchor': 'bottom',
+                }
+            });
+
+            const updatePositions = () => {
+                //fetch('./vehicle_positions.json')
+                fetch('https://buskatoon.ca/vehicle_positions.json')
+                    .then(r => r.json())
+                    .then(data => {
+                        for (const vehicleId in data.vehicles) {
+                            const vehicleHistory = data.vehicles[vehicleId];
+                            const currentPos = vehicleHistory[0]; // Most recent position
+
+                            if (busFeaturesById[vehicleId]) {
+                                busFeaturesById[vehicleId].properties.fromCoordinates = [
+                                    busFeaturesById[vehicleId].geometry.coordinates[0],
+                                    busFeaturesById[vehicleId].geometry.coordinates[1],
+                                ];
+                                busFeaturesById[vehicleId].properties.toCoordinates =
+                                    [currentPos.longitude, currentPos.latitude];
+                            } else {
+                                const busFeature = {
+                                    type: 'Feature',
+                                    geometry: {
+                                        type: 'Point',
+                                        coordinates: [currentPos.longitude, currentPos.latitude]
+                                    },
+                                    properties: {
+                                        id: vehicleId,
+                                        bearing: currentPos.bearing,
+                                        speed: currentPos.speed,
+                                        timestamp: currentPos.timestamp
+                                    }
+                                };
+                                busPositions.features.push(busFeature);
+                                busFeaturesById[vehicleId] = busFeature;
+                            }
+                        }
+
+                        map.getSource('buses').setData(busPositions);
+
+                        let start;
+                        const animateBusMovements = (timestamp) => {
+                            if (start === undefined) {
+                                start = timestamp;
+                            }
+                            const elapsed = timestamp - start;
+                            const interp = elapsed / 1000; // 1 second animation
+                            const lastFrame = interp >= 1;
+                            const easedInterp = easeInOutQuad(interp);
+
+                            Object.values(busFeaturesById).forEach(busFeature => {
+                                if (busFeature.properties.toCoordinates) {
+                                    if (lastFrame) {
+                                        busFeature.geometry.coordinates = busFeature.properties.toCoordinates;
+                                        delete busFeature.properties.fromCoordinates;
+                                        delete busFeature.properties.toCoordinates;
+                                    } else {
+                                        busFeature.geometry.coordinates = [
+                                            busFeature.properties.fromCoordinates[0] + easedInterp * (
+                                                busFeature.properties.toCoordinates[0] - busFeature.properties.fromCoordinates[0]
+                                            ),
+                                            busFeature.properties.fromCoordinates[1] + easedInterp * (
+                                                busFeature.properties.toCoordinates[1] - busFeature.properties.fromCoordinates[1]
+                                            ),
+                                        ];
+                                    }
+                                }
+                            });
+
+                            map.getSource('buses').setData(busPositions);
+
+                            if (!lastFrame) {
+                                requestAnimationFrame(animateBusMovements);
+                            }
+                        };
+                        requestAnimationFrame(animateBusMovements);
+                    });
+            };
+            updatePositions();
+            setInterval(updatePositions, 10000);
+        });
+    </script>
+</body>
+</html>
