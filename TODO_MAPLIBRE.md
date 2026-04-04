@@ -7,7 +7,8 @@
     * [x] Update "Last report" every second
     * [ ] Status colours for when last report was over 75/150 seconds ago
 * Bus trails
-    * [ ] Draw lines
+    * [x] Draw lines
+    * [x] Make lines clickable
     * [ ] Draw arrows
     * [ ] Experiment with patterned lines
 * Bus route

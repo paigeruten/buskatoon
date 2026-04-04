@@ -49,6 +49,12 @@
             features: []
         };
 
+        const busHistoriesById = {};
+        const busHistories = {
+            type: 'FeatureCollection',
+            features: []
+        };
+
         const saskatoonCenter = [-106.650046, 52.133214];
         const map = new maplibregl.Map({
             container: 'map',
@@ -82,6 +88,26 @@
 
             const busImage = await map.loadImage('bus-marker.png');
             map.addImage('bus-marker', busImage.data);
+
+            map.addSource('busHistories', {
+                type: 'geojson',
+                data: busHistories
+            });
+
+            map.addLayer({
+                id: 'busHistories',
+                type: 'line',
+                source: 'busHistories',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': '#ed6498',
+                    'line-width': 3,
+                    'line-opacity': 0.5
+                }
+            });
 
             map.addSource('buses', {
                 type: 'geojson',
@@ -150,9 +176,33 @@
                                 busPositions.features.push(busFeature);
                                 busFeaturesById[vehicleId] = busFeature;
                             }
+
+                            if (busHistoriesById[vehicleId]) {
+                                busHistoriesById[vehicleId].geometry.coordinates =
+                                    vehicleHistory.map(pos => [pos.longitude, pos.latitude]);
+
+                                // Endpoint will be animated along with the bus marker
+                                busHistoriesById[vehicleId].geometry.coordinates[0] =
+                                    busFeaturesById[vehicleId].geometry.coordinates;
+                            } else {
+                                const busHistory = {
+                                    type: 'Feature',
+                                    geometry: {
+                                        type: 'LineString',
+                                        coordinates: vehicleHistory.map(pos => [pos.longitude, pos.latitude])
+                                    },
+                                    properties: {
+                                        id: vehicleId,
+                                        //color: '#' + (currentPos.route?.color ?? 'aaaaaa')
+                                    }
+                                };
+                                busHistories.features.push(busHistory);
+                                busHistoriesById[vehicleId] = busHistory;
+                            }
                         }
 
                         map.getSource('buses').setData(busPositions);
+                        map.getSource('busHistories').setData(busHistories);
                         updatePopupContent();
 
                         let start;
@@ -182,6 +232,11 @@
                                         ];
                                     }
 
+                                    if (busHistoriesById[busFeature.properties.id]) {
+                                        busHistoriesById[busFeature.properties.id].geometry.coordinates[0] =
+                                            busFeature.geometry.coordinates;
+                                    }
+
                                     if (popup && busFeature.properties.id === popupBusId) {
                                         popup.setLngLat(busFeature.geometry.coordinates);
                                     }
@@ -189,6 +244,7 @@
                             });
 
                             map.getSource('buses').setData(busPositions);
+                            map.getSource('busHistories').setData(busHistories);
 
                             if (!lastFrame) {
                                 requestAnimationFrame(animateBusMovements);
@@ -204,6 +260,19 @@
             map.on('mouseleave', 'buses', () => { map.getCanvas().style.cursor = ''; });
             map.on('click', 'buses', (e) => {
                 const bus = e.features[0];
+
+                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 25 })
+                    .setLngLat(bus.geometry.coordinates.slice())
+                    .addTo(map);
+                popupBusId = bus.properties.id;
+                updatePopupContent();
+            });
+
+            map.on('mouseenter', 'busHistories', () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'busHistories', () => { map.getCanvas().style.cursor = ''; });
+            map.on('click', 'busHistories', (e) => {
+                const busId = e.features[0].properties.id;
+                const bus = busFeaturesById[busId];
 
                 popup = new maplibregl.Popup({ anchor: 'bottom', offset: 25 })
                     .setLngLat(bus.geometry.coordinates.slice())
