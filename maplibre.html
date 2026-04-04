@@ -27,6 +27,22 @@
             return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
         }
 
+        function formatBearing(bearing) {
+            return ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][Math.round(bearing / 45)];
+        }
+
+        function formatSpeed(speed) {
+            if (typeof speed === 'number') {
+                return `(${Math.round(speed * 3.6)} km/h)`;
+            } else {
+                return '';
+            }
+        }
+
+        function getAge(lastReport) {
+            return Math.round(+(new Date())/1000 - lastReport);
+        }
+
         const busFeaturesById = {};
         const busPositions = {
             type: 'FeatureCollection',
@@ -62,6 +78,8 @@
         );
 
         map.on('load', async function() {
+            let popup, popupBusId;
+
             const busImage = await map.loadImage('bus-marker.png');
             map.addImage('bus-marker', busImage.data);
 
@@ -82,6 +100,19 @@
                 }
             });
 
+            function updatePopupContent() {
+                if (popup && popupBusId && busFeaturesById[popupBusId]) {
+                    const bus = busFeaturesById[popupBusId];
+
+                    let content = `<strong>Bus ID:</strong> ${bus.properties.id}<br>`;
+                    content += `<strong>Bearing:</strong> ${formatBearing(bus.properties.bearing)} ${formatSpeed(bus.properties.speed)}<br>`;
+                    content += `<strong>Last report:</strong> ${getAge(bus.properties.timestamp)} seconds ago`;
+
+                    popup.setHTML(content);
+                }
+            }
+            setInterval(updatePopupContent, 1000);
+
             const updatePositions = () => {
                 //fetch('./vehicle_positions.json')
                 fetch('https://buskatoon.ca/vehicle_positions.json')
@@ -92,6 +123,10 @@
                             const currentPos = vehicleHistory[0]; // Most recent position
 
                             if (busFeaturesById[vehicleId]) {
+                                busFeaturesById[vehicleId].properties.bearing = currentPos.bearing;
+                                busFeaturesById[vehicleId].properties.speed = currentPos.speed;
+                                busFeaturesById[vehicleId].properties.timestamp = currentPos.timestamp;
+
                                 busFeaturesById[vehicleId].properties.fromCoordinates = [
                                     busFeaturesById[vehicleId].geometry.coordinates[0],
                                     busFeaturesById[vehicleId].geometry.coordinates[1],
@@ -118,6 +153,7 @@
                         }
 
                         map.getSource('buses').setData(busPositions);
+                        updatePopupContent();
 
                         let start;
                         const animateBusMovements = (timestamp) => {
@@ -145,6 +181,10 @@
                                             ),
                                         ];
                                     }
+
+                                    if (popup && busFeature.properties.id === popupBusId) {
+                                        popup.setLngLat(busFeature.geometry.coordinates);
+                                    }
                                 }
                             });
 
@@ -159,6 +199,18 @@
             };
             updatePositions();
             setInterval(updatePositions, 10000);
+
+            map.on('mouseenter', 'buses', () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'buses', () => { map.getCanvas().style.cursor = ''; });
+            map.on('click', 'buses', (e) => {
+                const bus = e.features[0];
+
+                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 25 })
+                    .setLngLat(bus.geometry.coordinates.slice())
+                    .addTo(map);
+                popupBusId = bus.properties.id;
+                updatePopupContent();
+            });
         });
     </script>
 </body>
