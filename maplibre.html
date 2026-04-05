@@ -23,6 +23,10 @@
     <div id="map"></div>
 
     <script>
+        const UNKNOWN_ROUTE = 'unknown';
+        const UNKNOWN_ROUTE_COLOR = 'aaaaaa';
+        const UNKNOWN_ROUTE_SHORT_NAME = '??';
+
         function easeInOutQuad(x) {
             return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
         }
@@ -42,6 +46,51 @@
         function getAge(lastReport) {
             return Math.round(+(new Date())/1000 - lastReport);
         }
+
+        function getTextColor(bgColor) {
+            const r = parseInt(bgColor.substr(0, 2), 16);
+            const g = parseInt(bgColor.substr(2, 2), 16);
+            const b = parseInt(bgColor.substr(4, 2), 16);
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.5 ? '000000' : 'ffffff';
+        }
+
+        // ./bus-marker.png
+        const busMarkerBase64 = "data:image/png;base64,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";
+        const busMarkerWidth = 36;
+        const busMarkerHeight = 48;
+
+        function generateBusIcon(routeNumber, routeColor) {
+          const labelWidth = 40;
+          const labelHeight = 28;
+          const gap = -3;
+          const totalWidth = Math.max(busMarkerWidth, labelWidth);
+          const totalHeight = labelHeight + gap + busMarkerHeight;
+
+          const busMarkerX = (totalWidth - busMarkerWidth) / 2;
+          const busMarkerY = labelHeight + gap;
+
+          const svgString = `
+            <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+                <image href="${busMarkerBase64}" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" image-rendering="pixelated" />
+                <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="6" fill="#${routeColor}" stroke="#000C36" stroke-width="2" />
+                <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
+                    ${routeNumber}
+                </text>
+            </svg>
+          `;
+
+          return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+        }
+
+        function getBusIconId(bus) {
+            const routeNumber = bus.properties.route?.short_name;
+            const routeColor = bus.properties.route?.color ?? UNKNOWN_ROUTE_COLOR;
+            return `bus-icon-${routeNumber ?? UNKNOWN_ROUTE}-${routeColor}`;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const fakeRoutesEnabled = !!params.get('fake_routes');
 
         const busFeaturesById = {};
         const busPositions = {
@@ -86,8 +135,30 @@
         map.on('load', async function() {
             let popup, popupBusId;
 
-            const busImage = await map.loadImage('bus-marker.png');
-            map.addImage('bus-marker', busImage.data);
+            const existingImages = {};
+            map.on('styleimagemissing', async (e) => {
+                if (existingImages[e.id]) {
+                    return;
+                }
+                existingImages[e.id] = true;
+
+                const match = e.id.match(/bus-icon-(?<number>.+?)-(?<color>.+)/);
+                if (match) {
+                    let { number, color } = match.groups;
+                    if (number === UNKNOWN_ROUTE) {
+                        number = UNKNOWN_ROUTE_SHORT_NAME;
+                    }
+
+                    const svg = generateBusIcon(number, color);
+                    const image = new Image();
+                    const promise = new Promise((resolve) => {
+                        image.onload = resolve;
+                    });
+                    image.src = svg;
+                    await promise; // Wait for the image to load
+                    map.addImage(e.id, image, { pixelRatio: window.devicePixelRatio || 2 });
+                }
+            });
 
             map.addSource('busHistories', {
                 type: 'geojson',
@@ -103,9 +174,10 @@
                     'line-join': 'round'
                 },
                 paint: {
-                    'line-color': '#ed6498',
+                    'line-color': ['get', 'color'],
                     'line-width': 3,
-                    'line-opacity': 0.5
+                    'line-opacity': 0.75,
+                    'line-dasharray': [1, 2]
                 }
             });
 
@@ -121,8 +193,7 @@
                 layout: {
                     'icon-overlap': 'always',
                     'icon-allow-overlap': true,
-                    'icon-image': 'bus-marker',
-                    'icon-size': 0.5,
+                    'icon-image': ['get', 'icon'],
                     'icon-anchor': 'bottom',
                 }
             });
@@ -171,9 +242,14 @@
                                         id: vehicleId,
                                         bearing: currentPos.bearing,
                                         speed: currentPos.speed,
-                                        timestamp: currentPos.timestamp
+                                        timestamp: currentPos.timestamp,
+                                        route: fakeRoutesEnabled ? {
+                                            short_name: String(Math.floor(Math.random() * 24) + 1),
+                                            color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')
+                                        } : currentPos.route
                                     }
                                 };
+                                busFeature.properties.icon = getBusIconId(busFeature);
                                 busPositions.features.push(busFeature);
                                 busFeaturesById[vehicleId] = busFeature;
                             }
@@ -194,7 +270,7 @@
                                     },
                                     properties: {
                                         id: vehicleId,
-                                        //color: '#' + (currentPos.route?.color ?? 'aaaaaa')
+                                        color: '#' + (busFeaturesById[vehicleId].properties.route?.color ?? UNKNOWN_ROUTE_COLOR)
                                     }
                                 };
                                 busHistories.features.push(busHistory);
@@ -257,29 +333,28 @@
             updatePositions();
             setInterval(updatePositions, 10000);
 
+            function selectBus(busId) {
+                const bus = busFeaturesById[busId];
+
+                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 35 })
+                    .setLngLat(bus.geometry.coordinates.slice())
+                    .addTo(map);
+                popupBusId = busId;
+                updatePopupContent();
+            }
+
             map.on('mouseenter', 'buses', () => { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'buses', () => { map.getCanvas().style.cursor = ''; });
             map.on('click', 'buses', (e) => {
-                const bus = e.features[0];
-
-                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 25 })
-                    .setLngLat(bus.geometry.coordinates.slice())
-                    .addTo(map);
-                popupBusId = bus.properties.id;
-                updatePopupContent();
+                selectBus(e.features[0].properties.id);
+                e.preventDefault();
             });
 
             map.on('mouseenter', 'busHistories', () => { map.getCanvas().style.cursor = 'pointer'; });
             map.on('mouseleave', 'busHistories', () => { map.getCanvas().style.cursor = ''; });
             map.on('click', 'busHistories', (e) => {
-                const busId = e.features[0].properties.id;
-                const bus = busFeaturesById[busId];
-
-                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 25 })
-                    .setLngLat(bus.geometry.coordinates.slice())
-                    .addTo(map);
-                popupBusId = bus.properties.id;
-                updatePopupContent();
+                selectBus(e.features[0].properties.id);
+                e.preventDefault();
             });
         });
     </script>
