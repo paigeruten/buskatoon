@@ -1,5 +1,5 @@
 * Bus markers
-    * [ ] Bus number and colour
+    * [x] Bus number and colour
 * Popup box
     * [x] Point it at the top of the bus marker rather than the bottom
     * [x] Move it with the bus
@@ -10,7 +10,7 @@
     * [x] Draw lines
     * [x] Make lines clickable
     * [ ] Draw arrows
-    * [ ] Experiment with patterned lines
+    * [x] Experiment with patterned lines
 * Bus route
     * [ ] Show full route path of selected bus
 * Info/About box
