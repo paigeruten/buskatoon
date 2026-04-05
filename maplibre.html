@@ -171,7 +171,21 @@
             });
 
             map.addLayer({
-                id: 'busRoute',
+                id: 'busRoute-outline',
+                type: 'line',
+                source: 'busRoute',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': '#000000',
+                    'line-width': 6
+                }
+            });
+
+            map.addLayer({
+                id: 'busRoute-fill',
                 type: 'line',
                 source: 'busRoute',
                 layout: {
@@ -180,8 +194,7 @@
                 },
                 paint: {
                     'line-color': ['get', 'color'],
-                    'line-width': 3,
-                    'line-opacity': 0.75
+                    'line-width': 4
                 }
             });
 
@@ -190,8 +203,28 @@
                 data: busHistories
             });
 
+            const busHistoriesOutlineWidth = 4;
+            const busHistoriesOutlineDashArray = [1, 2];
             map.addLayer({
-                id: 'busHistories',
+                id: 'busHistories-outline',
+                type: 'line',
+                source: 'busHistories',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': '#666666',
+                    'line-width': busHistoriesOutlineWidth,
+                    'line-dasharray': busHistoriesOutlineDashArray
+                }
+            });
+
+            const busHistoriesFillWidth = 3;
+            const busHistoriesFillDashArray = busHistoriesOutlineDashArray
+                .map(x => x * busHistoriesOutlineWidth / busHistoriesFillWidth);
+            map.addLayer({
+                id: 'busHistories-fill',
                 type: 'line',
                 source: 'busHistories',
                 layout: {
@@ -200,9 +233,8 @@
                 },
                 paint: {
                     'line-color': ['get', 'color'],
-                    'line-width': 3,
-                    'line-opacity': 0.75,
-                    'line-dasharray': [1, 2]
+                    'line-width': busHistoriesFillWidth,
+                    'line-dasharray': busHistoriesFillDashArray
                 }
             });
 
@@ -271,7 +303,7 @@
                                         route: fakeRoutesEnabled ? {
                                             short_name: String(Math.floor(Math.random() * 24) + 1),
                                             color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
-                                            shape_id: 96589
+                                            shape_id: 96623
                                         } : currentPos.route
                                     }
                                 };
@@ -390,10 +422,13 @@
 
                     map.getSource('busRoute').setData(busRoute);
 
+                    const thisPopup = popup;
                     popup.on('close', () => {
-                        if (busRoute.features.length > 0 && busRoute.features[0].properties.id === busId) {
-                            busRoute.features = [];
-                            map.getSource('busRoute').setData(busRoute);
+                        if (popup === thisPopup) {
+                            if (busRoute.features.length > 0 && busRoute.features[0].properties.id === busId) {
+                                busRoute.features = [];
+                                map.getSource('busRoute').setData(busRoute);
+                            }
                         }
                     });
                 }
