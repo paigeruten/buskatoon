@@ -1,5 +1,6 @@
 * Bus markers
     * [x] Bus number and colour
+    * [ ] Fix mobile bug where bus markers don't show up sometimes
 * Popup box
     * [x] Point it at the top of the bus marker rather than the bottom
     * [x] Move it with the bus
@@ -13,7 +14,7 @@
     * [x] Experiment with patterned lines
 * Bus route
     * [x] Show full route path of selected bus
-    * [ ] Show bus stops along selected route
+    * [x] Show bus stops along selected route
 * Info/About box
 * Warning bar
     * [x] No buses are running

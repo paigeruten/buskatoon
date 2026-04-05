@@ -368,6 +368,10 @@
             type: 'FeatureCollection',
             features: []
         };
+        const busRouteStops = {
+            type: 'FeatureCollection',
+            features: []
+        };
 
         const saskatoonCenter = [-106.650046, 52.133214];
         const map = new maplibregl.Map({
@@ -399,6 +403,9 @@
 
         map.on('load', async function() {
             let popup, popupBusId;
+
+            const busStopImage = await map.loadImage('./bus-stop.png');
+            map.addImage('bus-stop', busStopImage.data, { pixelRatio: 2 });
 
             const existingImages = {};
             map.on('styleimagemissing', async (e) => {
@@ -455,6 +462,22 @@
                 paint: {
                     'line-color': ['get', 'color'],
                     'line-width': 4
+                }
+            });
+
+            map.addSource('busRouteStops', {
+                type: 'geojson',
+                data: busRouteStops
+            });
+
+            map.addLayer({
+                id: 'busRouteStops',
+                type: 'symbol',
+                source: 'busRouteStops',
+                layout: {
+                    'icon-overlap': 'always',
+                    'icon-allow-overlap': true,
+                    'icon-image': 'bus-stop',
                 }
             });
 
@@ -552,8 +575,8 @@
             const updatePositions = async () => {
                 let data;
                 try {
-                    const response = await fetch('./vehicle_positions.json');
-                    //const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
+                    //const response = await fetch('./vehicle_positions.json');
+                    const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
                     if (!response.ok) {
                         throw new Error(`Response status: ${response.status}`);
                     }
@@ -613,7 +636,8 @@
                                     long_name: 'City Centre / Stonebridge',
                                     headsign: 'City Centre',
                                     color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
-                                    shape_id: 96623
+                                    shape_id: 96599,
+                                    trip_id: 1501273
                                 } : currentPos.route
                             }
                         };
@@ -705,11 +729,15 @@
             updatePositions();
             setInterval(updatePositions, 10000);
 
-            let transitShapes = {};
+            let shapesById = {};
+            let stopsById = {};
+            let stopsByTripId = {};
             fetch('shapes.json')
                 .then(r => r.json())
                 .then(data => {
-                    transitShapes = data;
+                    shapesById = data.shapes_by_id;
+                    stopsById = data.stops_by_id;
+                    stopsByTripId = data.stops_by_trip_id;
                 });
 
             function selectBus(busId) {
@@ -721,12 +749,12 @@
                 popupBusId = busId;
                 updatePopupContent();
 
-                if (bus.properties.route?.shape_id && transitShapes[bus.properties.route?.shape_id]) {
+                if (bus.properties.route?.shape_id && shapesById[bus.properties.route?.shape_id]) {
                     busRoute.features = [{
                         type: 'Feature',
                         geometry: {
                             type: 'LineString',
-                            coordinates: transitShapes[bus.properties.route.shape_id]
+                            coordinates: shapesById[bus.properties.route.shape_id]
                         },
                         properties: {
                             id: busId,
@@ -736,12 +764,26 @@
 
                     map.getSource('busRoute').setData(busRoute);
 
+                    if (bus.properties.route?.trip_id && stopsByTripId[bus.properties.route?.trip_id]) {
+                        busRouteStops.features = stopsByTripId[bus.properties.route?.trip_id].filter(stopId => stopsById[stopId]).map(stopId => ({
+                            type: 'Feature',
+                            geometry: {
+                                type: 'Point',
+                                coordinates: stopsById[stopId]
+                            }
+                        }));
+
+                        map.getSource('busRouteStops').setData(busRouteStops);
+                    }
+
                     const thisPopup = popup;
                     popup.on('close', () => {
                         if (popup === thisPopup) {
                             if (busRoute.features.length > 0 && busRoute.features[0].properties.id === busId) {
                                 busRoute.features = [];
                                 map.getSource('busRoute').setData(busRoute);
+                                busRouteStops.features = [];
+                                map.getSource('busRouteStops').setData(busRouteStops);
                             }
                         }
                     });
