@@ -16,5 +16,5 @@
     * [ ] Show bus stops along selected route
 * Info/About box
 * Warning bar
-    * [ ] No buses are running
-    * [ ] No route information available
+    * [x] No buses are running
+    * [x] No route information available
