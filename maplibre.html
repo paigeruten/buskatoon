@@ -191,11 +191,53 @@
                 font-size: 12px;
             }
         }
+
+        #live-data-status {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            position: relative;
+            top: -1px;
+            margin-right: 3px;
+        }
+
+        #live-data-status.disconnected {
+            background-color: #cc2e71;
+        }
+
+        #live-data-status::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #2ecc71;
+            border-radius: 50%;
+            z-index: -1; /* Puts the ring behind the dot */
+            animation: pulse-ring 2s infinite;
+        }
+
+        #live-data-status.disconnected::before {
+            display: none;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <div id="hud">
+      <span id="live-data-status" class="disconnected"></span>
       <span id="bus-count">0</span> buses
       &middot;
       <a href="#" id="about-link">about</a>
@@ -249,6 +291,7 @@
     <div id="warning-bar"><span></span></div>
 
     <script>
+        const liveDataStatusEl = document.querySelector('#live-data-status');
         const busCountEl = document.querySelector('#bus-count');
 
         const aboutEl = document.querySelector('#about');
@@ -585,8 +628,11 @@
                     console.error(error.message);
                     warningTextEl.textContent = '⚠️ Can\'t connect to server. Will keep retrying...';
                     warningBarEl.classList.add('show-warning-bar');
+                    liveDataStatusEl.classList.add('disconnected');
                     return;
                 }
+
+                liveDataStatusEl.classList.remove('disconnected');
 
                 if (data.outage) {
                     warningTextEl.textContent = '⚠️ No buses are reporting their positions at the moment.';
