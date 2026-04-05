@@ -27,6 +27,15 @@
           padding-right: 5px;
           margin-right: 2px;
         }
+
+        .status-stale {
+          color: #f70;
+        }
+
+        .status-dormant {
+          font-weight: bold;
+          color: red;
+        }
     </style>
 </head>
 <body>
@@ -57,6 +66,17 @@
             return Math.round(+(new Date())/1000 - lastReport);
         }
 
+        function getStatus(bus) {
+            const age = getAge(bus.properties.timestamp);
+            if (age >= 150) {
+                return 'dormant';
+            } else if (age >= 75) {
+                return 'stale';
+            } else {
+                return 'fresh';
+            }
+        }
+
         function getTextColor(bgColor) {
             const r = parseInt(bgColor.substr(0, 2), 16);
             const g = parseInt(bgColor.substr(2, 2), 16);
@@ -67,10 +87,15 @@
 
         // ./bus-marker.png
         const busMarkerBase64 = "data:image/png;base64,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";
+        // ./bus-marker-grey.png
+        const busMarkerGreyBase64 = "data:image/png;base64,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";
+        // ./gravestone.png
+        const busMarkerDeadBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAABmJLR0QA/wD/AP+gvaeTAAABJUlEQVQ4jaWVS1LDMBBEu30YdpwGu3wCEqqMK2cJgqpATqCxT8OSm7ChWRCMYn2iFLOUZp7m05IAAJLo/fQ0TdOIK83MNt5PB0kEAEqi2bwnMQIQiV3Xda4WBvAAgCSObdtuaTY7QI+BnySOfd++lGDezwMpB4B/q3xuJLwDUOBLUq5UvpltYhhE6oOn0+5JvcYOcflhmSnfZbEGegmG1UYRKunzEiwCnqCJZi89PltLDS8CFjINLSuvXEAJWtRqkwOSX9nDSpYMykwztGyWUYbez0NqmliJX8L+x7cAzN8A7CRu19DUjVoCa0RbI37WwoKWFKG8BlYDbYDmdr0hcSy9iX3fHiWOiAbFm389sOeZ8q3r7h6WlMxml5JBBXQwm93vF/ANC8rnx01ZZCwAAAAASUVORK5CYII=";
+
         const busMarkerWidth = 36;
         const busMarkerHeight = 48;
 
-        function generateBusIcon(routeNumber, routeColor) {
+        function generateBusIcon(routeNumber, routeColor, status) {
           const labelWidth = 40;
           const labelHeight = 28;
           const gap = -3;
@@ -80,9 +105,11 @@
           const busMarkerX = (totalWidth - busMarkerWidth) / 2;
           const busMarkerY = labelHeight + gap;
 
+          const busMarkerData = (status === 'stale' ? busMarkerGreyBase64 : (status === 'dormant' ? busMarkerDeadBase64 : busMarkerBase64));
+
           const svgString = `
             <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
-                <image href="${busMarkerBase64}" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" image-rendering="pixelated" />
+                <image href="${busMarkerData}" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" image-rendering="pixelated" />
                 <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="6" fill="#${routeColor}" stroke="#000C36" stroke-width="2" />
                 <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
                     ${routeNumber}
@@ -96,7 +123,8 @@
         function getBusIconId(bus) {
             const routeNumber = bus.properties.route?.short_name;
             const routeColor = bus.properties.route?.color ?? UNKNOWN_ROUTE_COLOR;
-            return `bus-icon-${routeNumber ?? UNKNOWN_ROUTE}-${routeColor}`;
+            const status = getStatus(bus);
+            return `bus-icon-${routeNumber ?? UNKNOWN_ROUTE}-${routeColor}-${status}`;
         }
 
         const params = new URLSearchParams(window.location.search);
@@ -157,14 +185,14 @@
                 }
                 existingImages[e.id] = true;
 
-                const match = e.id.match(/bus-icon-(?<number>.+?)-(?<color>.+)/);
+                const match = e.id.match(/bus-icon-(?<number>.+?)-(?<color>.+)-(?<status>.+)/);
                 if (match) {
-                    let { number, color } = match.groups;
+                    let { number, color, status } = match.groups;
                     if (number === UNKNOWN_ROUTE) {
                         number = UNKNOWN_ROUTE_SHORT_NAME;
                     }
 
-                    const svg = generateBusIcon(number, color);
+                    const svg = generateBusIcon(number, color, status);
                     const image = new Image();
                     const promise = new Promise((resolve) => {
                         image.onload = resolve;
@@ -282,12 +310,22 @@
                     if (bus.properties.route) {
                         content += `<strong>Headsign:</strong> ${bus.properties.route.headsign}<br>`;
                     }
-                    content += `<strong>Last report:</strong> ${getAge(bus.properties.timestamp)} seconds ago`;
+                    content += `<strong>Last report:</strong> <span class="status-${getStatus(bus)}">${getAge(bus.properties.timestamp)} seconds ago</span>`;
 
                     popup.setHTML(content);
                 }
             }
-            setInterval(updatePopupContent, 1000);
+
+            function tick() {
+                updatePopupContent();
+
+                Object.values(busFeaturesById).forEach(bus => {
+                    bus.properties.icon = getBusIconId(bus);
+                });
+
+                map.getSource('buses').setData(busPositions);
+            }
+            setInterval(tick, 1000);
 
             const updatePositions = () => {
                 //fetch('./vehicle_positions.json')
@@ -302,6 +340,9 @@
                                 busFeaturesById[vehicleId].properties.bearing = currentPos.bearing;
                                 busFeaturesById[vehicleId].properties.speed = currentPos.speed;
                                 busFeaturesById[vehicleId].properties.timestamp = currentPos.timestamp;
+                                if (!fakeRoutesEnabled) {
+                                    busFeaturesById[vehicleId].properties.route = currentPos.route;
+                                }
 
                                 busFeaturesById[vehicleId].properties.fromCoordinates = [
                                     busFeaturesById[vehicleId].geometry.coordinates[0],
@@ -309,6 +350,8 @@
                                 ];
                                 busFeaturesById[vehicleId].properties.toCoordinates =
                                     [currentPos.longitude, currentPos.latitude];
+
+                                busFeaturesById[vehicleId].properties.icon = getBusIconId(busFeaturesById[vehicleId]);
                             } else {
                                 const busFeature = {
                                     type: 'Feature',

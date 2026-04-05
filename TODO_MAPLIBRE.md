@@ -5,7 +5,7 @@
     * [x] Move it with the bus
     * [x] Bus number, headsign
     * [x] Update "Last report" every second
-    * [ ] Status colours for when last report was over 75/150 seconds ago
+    * [x] Status colours for when last report was over 75/150 seconds ago
 * Bus trails
     * [x] Draw lines
     * [x] Make lines clickable
