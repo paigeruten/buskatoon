@@ -17,6 +17,16 @@
             height: 100%;
             width: 100%;
         }
+
+        .bus-route-number {
+          display: inline-block;
+          text-align: center;
+          font-weight: bold;
+          border-radius: 5px;
+          padding-left: 5px;
+          padding-right: 5px;
+          margin-right: 2px;
+        }
     </style>
 </head>
 <body>
@@ -258,9 +268,20 @@
             function updatePopupContent() {
                 if (popup && popupBusId && busFeaturesById[popupBusId]) {
                     const bus = busFeaturesById[popupBusId];
+                    const busRouteColor = bus.properties.route?.color ?? UNKNOWN_ROUTE_COLOR;
 
-                    let content = `<strong>Bus ID:</strong> ${bus.properties.id}<br>`;
+                    let content =
+                        '<h3>' + 
+                            `<span class="bus-route-number" style="background-color: #${busRouteColor}; color: #${getTextColor(busRouteColor)};">` +
+                                (bus.properties.route?.short_name ?? '??') +
+                            '</span> ' +
+                            (bus.properties.route?.long_name ?? '(Unknown route)') +
+                        '</h3>';
+
                     content += `<strong>Bearing:</strong> ${formatBearing(bus.properties.bearing)} ${formatSpeed(bus.properties.speed)}<br>`;
+                    if (bus.properties.route) {
+                        content += `<strong>Headsign:</strong> ${bus.properties.route.headsign}<br>`;
+                    }
                     content += `<strong>Last report:</strong> ${getAge(bus.properties.timestamp)} seconds ago`;
 
                     popup.setHTML(content);
@@ -302,6 +323,8 @@
                                         timestamp: currentPos.timestamp,
                                         route: fakeRoutesEnabled ? {
                                             short_name: String(Math.floor(Math.random() * 24) + 1),
+                                            long_name: 'City Centre / Stonebridge',
+                                            headsign: 'City Centre',
                                             color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
                                             shape_id: 96623
                                         } : currentPos.route
