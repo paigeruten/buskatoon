@@ -249,6 +249,8 @@
     <div id="warning-bar"><span></span></div>
 
     <script>
+        const busCountEl = document.querySelector('#bus-count');
+
         const aboutEl = document.querySelector('#about');
         document.querySelector('#about-link').addEventListener('click', (e) => {
             e.preventDefault();
@@ -566,13 +568,14 @@
                 if (data.outage) {
                     warningTextEl.textContent = '⚠️ No buses are reporting their positions at the moment.';
                     warningBarEl.classList.add('show-warning-bar');
-                } else if (Object.values(data.vehicles).every(bus => !bus[0].route)) {
+                } else if (Object.values(data.vehicles).every(bus => !bus[0].route) && !fakeRoutesEnabled) {
                     warningTextEl.textContent = '⚠️ No bus route information available. Saskatoon OpenData may be out of date.';
                     warningBarEl.classList.add('show-warning-bar');
                 } else {
                     warningBarEl.classList.remove('show-warning-bar');
                 }
 
+                let busCount = 0;
                 for (const vehicleId in data.vehicles) {
                     const vehicleHistory = data.vehicles[vehicleId];
                     const currentPos = vehicleHistory[0]; // Most recent position
@@ -641,11 +644,16 @@
                         busHistories.features.push(busHistory);
                         busHistoriesById[vehicleId] = busHistory;
                     }
+
+                    if (getStatus(busFeaturesById[vehicleId]) !== 'dormant') {
+                        busCount++;
+                    }
                 }
 
                 map.getSource('buses').setData(busPositions);
                 map.getSource('busHistories').setData(busHistories);
                 updatePopupContent();
+                busCountEl.textContent = busCount;
 
                 let start;
                 const animateBusMovements = (timestamp) => {
