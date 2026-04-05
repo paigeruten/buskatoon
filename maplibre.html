@@ -71,7 +71,7 @@
           const busMarkerY = labelHeight + gap;
 
           const svgString = `
-            <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+            <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
                 <image href="${busMarkerBase64}" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" image-rendering="pixelated" />
                 <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="6" fill="#${routeColor}" stroke="#000C36" stroke-width="2" />
                 <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
@@ -156,7 +156,7 @@
                     });
                     image.src = svg;
                     await promise; // Wait for the image to load
-                    map.addImage(e.id, image, { pixelRatio: window.devicePixelRatio || 2 });
+                    map.addImage(e.id, image, { pixelRatio: 2 });
                 }
             });
 
