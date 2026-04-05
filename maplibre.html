@@ -104,6 +104,11 @@
             features: []
         };
 
+        const busRoute = {
+            type: 'FeatureCollection',
+            features: []
+        };
+
         const saskatoonCenter = [-106.650046, 52.133214];
         const map = new maplibregl.Map({
             container: 'map',
@@ -157,6 +162,26 @@
                     image.src = svg;
                     await promise; // Wait for the image to load
                     map.addImage(e.id, image, { pixelRatio: 2 });
+                }
+            });
+
+            map.addSource('busRoute', {
+                type: 'geojson',
+                data: busRoute
+            });
+
+            map.addLayer({
+                id: 'busRoute',
+                type: 'line',
+                source: 'busRoute',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': 3,
+                    'line-opacity': 0.75
                 }
             });
 
@@ -245,7 +270,8 @@
                                         timestamp: currentPos.timestamp,
                                         route: fakeRoutesEnabled ? {
                                             short_name: String(Math.floor(Math.random() * 24) + 1),
-                                            color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0')
+                                            color: (Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
+                                            shape_id: 96589
                                         } : currentPos.route
                                     }
                                 };
@@ -333,6 +359,13 @@
             updatePositions();
             setInterval(updatePositions, 10000);
 
+            let transitShapes = {};
+            fetch('shapes.json')
+                .then(r => r.json())
+                .then(data => {
+                    transitShapes = data;
+                });
+
             function selectBus(busId) {
                 const bus = busFeaturesById[busId];
 
@@ -341,6 +374,29 @@
                     .addTo(map);
                 popupBusId = busId;
                 updatePopupContent();
+
+                if (bus.properties.route?.shape_id && transitShapes[bus.properties.route?.shape_id]) {
+                    busRoute.features = [{
+                        type: 'Feature',
+                        geometry: {
+                            type: 'LineString',
+                            coordinates: transitShapes[bus.properties.route.shape_id]
+                        },
+                        properties: {
+                            id: busId,
+                            color: '#' + (bus.properties.route?.color ?? UNKNOWN_ROUTE_COLOR)
+                        }
+                    }];
+
+                    map.getSource('busRoute').setData(busRoute);
+
+                    popup.on('close', () => {
+                        if (busRoute.features.length > 0 && busRoute.features[0].properties.id === busId) {
+                            busRoute.features = [];
+                            map.getSource('busRoute').setData(busRoute);
+                        }
+                    });
+                }
             }
 
             map.on('mouseenter', 'buses', () => { map.getCanvas().style.cursor = 'pointer'; });

@@ -1,5 +1,9 @@
 <?php
 
+// --------------------------------------------
+// Import Trips and Routes into SQLite database
+// --------------------------------------------
+
 $DB_FILE = 'buskatoon.sqlite3';
 $ROUTES_URL = 'https://services2.arcgis.com/eJz9754Ox6TaFSC2/arcgis/rest/services/Transit_Routes/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson';
 $TRIPS_URL = 'https://services2.arcgis.com/eJz9754Ox6TaFSC2/arcgis/rest/services/Transit_Trips/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson';
@@ -24,6 +28,7 @@ $db->exec('
   CREATE TABLE trips (
     id INTEGER PRIMARY KEY,
     route_id INTEGER,
+    shape_id INTEGER,
     headsign TEXT
   );
 ');
@@ -45,7 +50,7 @@ foreach ($routes->features as $route) {
   ]);
 }
 
-$sql = 'INSERT INTO trips (id, route_id, headsign) VALUES (:id, :route_id, :headsign);';
+$sql = 'INSERT INTO trips (id, route_id, shape_id, headsign) VALUES (:id, :route_id, :shape_id, :headsign);';
 $stmt = $db->prepare($sql);
 
 $trips_url = $TRIPS_URL;
@@ -60,9 +65,47 @@ do {
     $stmt->execute([
       ':id' => $trip->properties->trip_id,
       ':route_id' => $trip->properties->route_id,
+      ':shape_id' => $trip->properties->shape_id,
       ':headsign' => $trip->properties->trip_headsign
     ]);
   }
 
   $offset += $limit;
 } while ($trips->properties->exceededTransferLimit ?? false);
+
+// -----------------------------------
+// Import Shapes into static JSON file
+// -----------------------------------
+
+$SHAPES_FILE = $argv[1] ?? 'shapes.json';
+$SHAPES_URL = 'https://services2.arcgis.com/eJz9754Ox6TaFSC2/arcgis/rest/services/Transit_Shapes/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson';
+
+$shapes_url = $SHAPES_URL;
+$limit = 1000;
+$offset = 0;
+$shapes = [];
+do {
+  $shapes_page_url = "$shapes_url&resultRecordCount=$limit&resultOffset=$offset";
+  echo "Retrieving $shapes_page_url\n";
+  $result = json_decode(file_get_contents($shapes_page_url));
+
+  foreach ($result->features as $shape) {
+    if (!isset($shapes[$shape->properties->shape_id])) {
+      $shapes[$shape->properties->shape_id] = [];
+    }
+    $shapes[$shape->properties->shape_id][] = [
+      'latitude' => $shape->properties->shape_pt_lat,
+      'longitude' => $shape->properties->shape_pt_lon,
+      'seq' => $shape->properties->shape_pt_sequence,
+    ];
+  }
+
+  $offset += $limit;
+} while ($result->properties->exceededTransferLimit ?? false);
+
+foreach (array_keys($shapes) as $shape_id) {
+  usort($shapes[$shape_id], function ($a, $b) { return $a['seq'] <=> $b['seq']; });
+  $shapes[$shape_id] = array_map(function ($shape) { return [$shape['longitude'], $shape['latitude']]; }, $shapes[$shape_id]);
+}
+
+file_put_contents($SHAPES_FILE, json_encode($shapes));

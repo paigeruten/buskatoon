@@ -1,0 +1,2 @@
+* * * * * bash -l ~/bin/update-buskatoon.sh
+0 */6 * * * bash -l ~/bin/update_opendata.sh

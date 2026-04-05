@@ -1,6 +1,6 @@
 <?php
 
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+error_reporting(E_ALL & ~E_DEPRECATED);
 
 require_once 'vendor/autoload.php';
 
@@ -57,7 +57,8 @@ foreach ($feed->getEntityList() as $entity) {
         'short_name' => $result['short_name'],
         'long_name' => $result['long_name'],
         'headsign' => $result['headsign'],
-        'color' => $result['color']
+        'color' => $result['color'],
+        'shape_id' => $result['shape_id'],
       ];
     } else {
       $route = null;
