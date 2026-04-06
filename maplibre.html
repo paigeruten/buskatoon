@@ -357,34 +357,36 @@
         // ./svg/gravestone.svg
         const busMarkerDeadSvg = '<symbol id="bus-marker" viewBox="0 0 96 96"><polygon fill="#AAAAAB" points="96,14 82,0 48,34 14,0 0,14 34,48 0,82 14,96 48,62 82,96 96,82 62,48 "/></symbol>';
 
-        const busMarkerWidth = 36;
-        const busMarkerHeight = 48;
-
         function generateBusIcon(routeNumber, routeColor, status) {
-          const labelWidth = 40;
-          const labelHeight = 28;
-          const gap = -3;
-          const totalWidth = Math.max(busMarkerWidth, labelWidth);
-          const totalHeight = labelHeight + gap + busMarkerHeight;
+            const scale = window.devicePixelRatio;
 
-          const busMarkerX = (totalWidth - busMarkerWidth) / 2;
-          const busMarkerY = labelHeight + gap;
+            const busMarkerWidth = 21 * scale;
+            const busMarkerHeight = 28 * scale;
 
-          const busMarkerSymbol = (status === 'stale' ? busMarkerGreySvg : (status === 'dormant' ? busMarkerDeadSvg : busMarkerSvg));
+            const labelWidth = 24 * scale;
+            const labelHeight = 16 * scale;
+            const gap = -2 * scale;
+            const totalWidth = Math.max(busMarkerWidth, labelWidth);
+            const totalHeight = labelHeight + gap + busMarkerHeight;
 
-          const svgString = `
-            <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
-                <defs>${busMarkerSymbol}</defs>
-                <use href="#bus-marker" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" />
+            const busMarkerX = (totalWidth - busMarkerWidth) / 2;
+            const busMarkerY = labelHeight + gap;
+
+            const busMarkerSymbol = (status === 'stale' ? busMarkerGreySvg : (status === 'dormant' ? busMarkerDeadSvg : busMarkerSvg));
+
+            const svgString = `
+                <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
+                    <defs>${busMarkerSymbol}</defs>
+                    <use href="#bus-marker" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" />
                 
-                <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="6" fill="#${routeColor}" stroke="#000C36" stroke-width="2" />
-                <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
-                    ${routeNumber}
-                </text>
-            </svg>
-          `;
+                    <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="${3 * scale}" fill="#${routeColor}" stroke="#000C36" stroke-width="${1 * scale}" />
+                    <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="${12 * scale}" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
+                        ${routeNumber}
+                    </text>
+                </svg>
+            `;
 
-          return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
+            return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgString)}`;
         }
 
         function getBusIconId(bus) {
@@ -424,6 +426,7 @@
             style: 'https://tiles.openfreemap.org/styles/bright',
             center: saskatoonCenter,
             zoom: 11,
+            maxPitch: 0,
             maxBounds: [
                 [saskatoonCenter[0] - 0.7, saskatoonCenter[1] - 0.3],
                 [saskatoonCenter[0] + 0.7, saskatoonCenter[1] + 0.3],
@@ -473,7 +476,47 @@
                     });
                     image.src = svg;
                     await promise; // Wait for the image to load
-                    map.addImage(e.id, image, { pixelRatio: 2 });
+                    map.addImage(e.id, image, { pixelRatio: window.devicePixelRatio });
+                }
+            });
+
+            map.addSource('busHistories', {
+                type: 'geojson',
+                data: busHistories
+            });
+
+            const busHistoriesOutlineWidth = 4;
+            const busHistoriesOutlineDashArray = [1, 2];
+            map.addLayer({
+                id: 'busHistories-outline',
+                type: 'line',
+                source: 'busHistories',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': '#666666',
+                    'line-width': busHistoriesOutlineWidth,
+                    'line-dasharray': busHistoriesOutlineDashArray
+                }
+            });
+
+            const busHistoriesFillWidth = 3;
+            const busHistoriesFillDashArray = busHistoriesOutlineDashArray
+                .map(x => x * busHistoriesOutlineWidth / busHistoriesFillWidth);
+            map.addLayer({
+                id: 'busHistories-fill',
+                type: 'line',
+                source: 'busHistories',
+                layout: {
+                    'line-cap': 'round',
+                    'line-join': 'round'
+                },
+                paint: {
+                    'line-color': ['get', 'color'],
+                    'line-width': busHistoriesFillWidth,
+                    'line-dasharray': busHistoriesFillDashArray
                 }
             });
 
@@ -523,46 +566,6 @@
                     'icon-overlap': 'always',
                     'icon-allow-overlap': true,
                     'icon-image': 'bus-stop',
-                }
-            });
-
-            map.addSource('busHistories', {
-                type: 'geojson',
-                data: busHistories
-            });
-
-            const busHistoriesOutlineWidth = 4;
-            const busHistoriesOutlineDashArray = [1, 2];
-            map.addLayer({
-                id: 'busHistories-outline',
-                type: 'line',
-                source: 'busHistories',
-                layout: {
-                    'line-cap': 'round',
-                    'line-join': 'round'
-                },
-                paint: {
-                    'line-color': '#666666',
-                    'line-width': busHistoriesOutlineWidth,
-                    'line-dasharray': busHistoriesOutlineDashArray
-                }
-            });
-
-            const busHistoriesFillWidth = 3;
-            const busHistoriesFillDashArray = busHistoriesOutlineDashArray
-                .map(x => x * busHistoriesOutlineWidth / busHistoriesFillWidth);
-            map.addLayer({
-                id: 'busHistories-fill',
-                type: 'line',
-                source: 'busHistories',
-                layout: {
-                    'line-cap': 'round',
-                    'line-join': 'round'
-                },
-                paint: {
-                    'line-color': ['get', 'color'],
-                    'line-width': busHistoriesFillWidth,
-                    'line-dasharray': busHistoriesFillDashArray
                 }
             });
 
@@ -791,7 +794,7 @@
             function selectBus(busId) {
                 const bus = busFeaturesById[busId];
 
-                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 35 })
+                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 40 })
                     .setLngLat(bus.geometry.coordinates.slice())
                     .addTo(map);
                 popupBusId = busId;

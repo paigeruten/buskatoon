@@ -1,2 +1,2 @@
-* * * * * bash -l ~/bin/update-buskatoon.sh
+* * * * * /usr/bin/flock -n /tmp/buskatoon.lock /bin/bash -l ~/bin/update-buskatoon.sh
 0 */6 * * * bash -l ~/bin/update_opendata.sh
