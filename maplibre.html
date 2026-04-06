@@ -36,6 +36,11 @@
             color: blue;
         }
 
+        .bus-popup h3 {
+            margin: 0 0 10px 0;
+            padding: 0;
+        }
+
         .bus-route-number {
             display: inline-block;
             text-align: center;
@@ -794,7 +799,7 @@
             function selectBus(busId) {
                 const bus = busFeaturesById[busId];
 
-                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 40 })
+                popup = new maplibregl.Popup({ anchor: 'bottom', offset: 40, className: 'bus-popup' })
                     .setLngLat(bus.geometry.coordinates.slice())
                     .addTo(map);
                 popupBusId = busId;

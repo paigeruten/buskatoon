@@ -1,6 +1,6 @@
 * Bus markers
     * [x] Bus number and colour
-    * [ ] Fix mobile bug where bus markers don't show up sometimes
+    * [x] Fix mobile bug where bus markers don't show up sometimes
 * Popup box
     * [x] Point it at the top of the bus marker rather than the bottom
     * [x] Move it with the bus
