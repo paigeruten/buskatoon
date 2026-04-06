@@ -284,9 +284,7 @@
 
         <p>Buses seem to report their location about every <strong>30 seconds</strong>. Those location reports take at least <strong>20 seconds</strong> to get to us. So bus locations shown will generally be <strong>20&ndash;50 seconds out of date</strong> at any given time. You can see precisely how out of date a bus's location is by clicking on it.</p>
 
-        <p>The last 5 location reports of each bus are shown as a series of arrows behind the bus.</p>
-
-        <p>If there are no buses reporting, and the sun is up, then there may be an outage of live data on saskatoon.ca's side. These seem pretty uncommon, but do happen.</p>
+        <p>The last 5 location reports of each bus are shown as a series of dashed lines behind the bus.</p>
 
         <p>
           <button id="about-close"><strong>&larr; Back to map</strong></button>
@@ -378,16 +376,19 @@
             const busMarkerY = labelHeight + gap;
 
             const busMarkerSymbol = (status === 'stale' ? busMarkerGreySvg : (status === 'dormant' ? busMarkerDeadSvg : busMarkerSvg));
+            const labelOpacity = (status === 'dormant' ? 0.5 : 1);
 
             const svgString = `
                 <svg width="${totalWidth}" height="${totalHeight}" viewBox="0 0 ${totalWidth} ${totalHeight}" xmlns="http://www.w3.org/2000/svg">
                     <defs>${busMarkerSymbol}</defs>
                     <use href="#bus-marker" x="${busMarkerX}" y="${busMarkerY}" width="${busMarkerWidth}" height="${busMarkerHeight}" />
                 
-                    <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="${3 * scale}" fill="#${routeColor}" stroke="#000C36" stroke-width="${1 * scale}" />
-                    <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="${12 * scale}" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
-                        ${routeNumber}
-                    </text>
+                    <g opacity="${labelOpacity}">
+                        <rect x="1" y="1" width="${labelWidth - 2}" height="${labelHeight - 2}" rx="${3 * scale}" fill="#${routeColor}" stroke="#000C36" stroke-width="${1 * scale}" />
+                        <text x="${labelWidth / 2}" y="${labelHeight / 2}" font-family="Arial, sans-serif" font-weight="bold" font-size="${12 * scale}" fill="#${getTextColor(routeColor)}" text-anchor="middle" dominant-baseline="central">
+                            ${routeNumber}
+                        </text>
+                    </g>
                 </svg>
             `;
 
@@ -702,31 +703,38 @@
                         busFeaturesById[vehicleId] = busFeature;
                     }
 
-                    if (busHistoriesById[vehicleId]) {
-                        busHistoriesById[vehicleId].geometry.coordinates =
-                            vehicleHistory.map(pos => [pos.longitude, pos.latitude]);
+                    const isDormant = getStatus(busFeaturesById[vehicleId]) === 'dormant';
 
-                        // Endpoint will be animated along with the bus marker
-                        busHistoriesById[vehicleId].geometry.coordinates[0] =
-                            busFeaturesById[vehicleId].geometry.coordinates;
+                    if (isDormant) {
+                        if (busHistoriesById[vehicleId]) {
+                            busHistories.features = busHistories.features.filter(feature => feature.properties.id != vehicleId);
+                            delete busHistoriesById[vehicleId];
+                        }
                     } else {
-                        const busHistory = {
-                            type: 'Feature',
-                            geometry: {
-                                type: 'LineString',
-                                coordinates: vehicleHistory.map(pos => [pos.longitude, pos.latitude])
-                            },
-                            properties: {
-                                id: vehicleId,
-                                color: '#' + (busFeaturesById[vehicleId].properties.route?.color ?? UNKNOWN_ROUTE_COLOR)
-                            }
-                        };
-                        busHistories.features.push(busHistory);
-                        busHistoriesById[vehicleId] = busHistory;
-                    }
-
-                    if (getStatus(busFeaturesById[vehicleId]) !== 'dormant') {
                         busCount++;
+
+                        if (busHistoriesById[vehicleId]) {
+                            busHistoriesById[vehicleId].geometry.coordinates =
+                                vehicleHistory.map(pos => [pos.longitude, pos.latitude]);
+
+                            // Endpoint will be animated along with the bus marker
+                            busHistoriesById[vehicleId].geometry.coordinates[0] =
+                                busFeaturesById[vehicleId].geometry.coordinates;
+                        } else {
+                            const busHistory = {
+                                type: 'Feature',
+                                geometry: {
+                                    type: 'LineString',
+                                    coordinates: vehicleHistory.map(pos => [pos.longitude, pos.latitude])
+                                },
+                                properties: {
+                                    id: vehicleId,
+                                    color: '#' + (busFeaturesById[vehicleId].properties.route?.color ?? UNKNOWN_ROUTE_COLOR)
+                                }
+                            };
+                            busHistories.features.push(busHistory);
+                            busHistoriesById[vehicleId] = busHistory;
+                        }
                     }
                 }
 
