@@ -862,9 +862,9 @@
                 e.preventDefault();
             });
 
-            map.on('mouseenter', 'busHistories', () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', 'busHistories', () => { map.getCanvas().style.cursor = ''; });
-            map.on('click', 'busHistories', (e) => {
+            map.on('mouseenter', 'busHistories-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
+            map.on('mouseleave', 'busHistories-fill', () => { map.getCanvas().style.cursor = ''; });
+            map.on('click', 'busHistories-fill', (e) => {
                 selectBus(e.features[0].properties.id);
                 e.preventDefault();
             });
