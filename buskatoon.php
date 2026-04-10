@@ -12,6 +12,25 @@ $DB_FILE = "$SCRIPT_PATH/buskatoon.sqlite3";
 $JSON_FILE = $argv[1] ?? "$SCRIPT_PATH/vehicle_positions.json";
 $OUTAGE_LOG_FILE = "$SCRIPT_PATH/outages.log";
 
+function fetch_url($url) {
+  $options = [
+    'http' => [
+      'method' => "GET",
+      'header' => "User-Agent: Buskatoon/1.0\r\n",
+      'timeout' => 30,
+      'ignore_errors' => true
+    ],
+    'ssl' => [
+      'timeout' => 10,
+      'verify_peer' => true,
+      'verify_peer_name' => true,
+    ]
+  ];
+
+  $context = stream_context_create($options);
+  return file_get_contents($url, false, $context);
+}
+
 $current_outage = 0;
 $vehicles = [];
 if (file_exists($JSON_FILE)) {
@@ -20,7 +39,7 @@ if (file_exists($JSON_FILE)) {
   $vehicles = $data['vehicles'] ?? [];
 }
 
-$data = file_get_contents("https://saskprdtmgtfs.sasktrpcloud.com/TMGTFSRealTimeWebService/Vehicle/VehiclePositions.pb");
+$data = fetch_url("https://saskprdtmgtfs.sasktrpcloud.com/TMGTFSRealTimeWebService/Vehicle/VehiclePositions.pb");
 if ($data === false) {
   die("Failed to retrieve VehiclePositions.pb\n");
 }
@@ -48,7 +67,7 @@ foreach ($feed->getEntityList() as $entity) {
 
     $trip_id = $vehicle->getTrip()->getTripId();
 
-    $sql = 'SELECT * FROM trips, routes WHERE trips.id = :trip_id AND trips.route_id = routes.id';
+    $sql = 'SELECT * FROM trips, routes WHERE trips.trip_id = :trip_id AND trips.route_id = routes.route_id';
     $stmt = $db->prepare($sql);
     $stmt->execute([':trip_id' => $trip_id]);
     $result = $stmt->fetch();

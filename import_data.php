@@ -1,5 +1,47 @@
 <?php
 
+function fetch_url_or_exit($url, $max_retries = 3) {
+  echo "Retrieving $url\n";
+
+  $options = [
+    'http' => [
+      'method' => "GET",
+      'header' => "User-Agent: Buskatoon/1.0\r\n",
+      'timeout' => 30,
+      'ignore_errors' => true
+    ],
+    'ssl' => [
+      'timeout' => 10,
+      'verify_peer' => true,
+      'verify_peer_name' => true,
+    ]
+  ];
+
+  $context = stream_context_create($options);
+  $attempts = 0;
+
+  while ($attempts < $max_retries) {
+    if ($attempts > 0) {
+      echo "  Retrying (attempt #" . ($attempts + 1) . ")\n";
+    }
+    $result = @file_get_contents($url, false, $context);
+
+    if ($result !== false) {
+      return $result;
+    }
+
+    echo "  Fetch failed\n";
+
+    $attempts++;
+    if ($attempts < $max_retries) {
+      sleep(2 * $attempts);
+    }
+  }
+
+  echo "  Giving up after $attempts failed attempts\n";
+  exit(1);
+}
+
 // --------------------------------------------
 // Import Trips and Routes into SQLite database
 // --------------------------------------------
@@ -17,7 +59,7 @@ $db->query('PRAGMA synchronous = OFF;');
 
 $db->exec('
   CREATE TABLE routes (
-    id INTEGER PRIMARY KEY,
+    route_id INTEGER PRIMARY KEY,
     short_name TEXT,
     long_name TEXT,
     color TEXT
@@ -26,31 +68,30 @@ $db->exec('
 
 $db->exec('
   CREATE TABLE trips (
-    id INTEGER PRIMARY KEY,
+    trip_id INTEGER PRIMARY KEY,
     route_id INTEGER,
     shape_id INTEGER,
     headsign TEXT
   );
 ');
 
-$sql = 'INSERT INTO routes (id, short_name, long_name, color) VALUES (:id, :short_name, :long_name, :color);';
+$sql = 'INSERT INTO routes (route_id, short_name, long_name, color) VALUES (:route_id, :short_name, :long_name, :color);';
 $stmt = $db->prepare($sql);
-echo "Retrieving $ROUTES_URL\n";
-$routes = json_decode(file_get_contents($ROUTES_URL));
+$routes = json_decode(fetch_url_or_exit($ROUTES_URL));
 foreach ($routes->features as $route) {
   // Add missing leading 0 that the XML feed seems to chop off
   $short_name = (string)$route->properties->route_short_name;
   if (strlen($short_name) == 1) $short_name = "0$short_name";
 
   $stmt->execute([
-    ':id' => $route->properties->route_id,
+    ':route_id' => $route->properties->route_id,
     ':short_name' => $short_name,
     ':long_name' => $route->properties->route_long_name,
     ':color' => $route->properties->route_color
   ]);
 }
 
-$sql = 'INSERT INTO trips (id, route_id, shape_id, headsign) VALUES (:id, :route_id, :shape_id, :headsign);';
+$sql = 'INSERT INTO trips (trip_id, route_id, shape_id, headsign) VALUES (:trip_id, :route_id, :shape_id, :headsign);';
 $stmt = $db->prepare($sql);
 
 $trips_url = $TRIPS_URL;
@@ -58,12 +99,11 @@ $limit = 1000;
 $offset = 0;
 do {
   $trips_page_url = "$trips_url&resultRecordCount=$limit&resultOffset=$offset";
-  echo "Retrieving $trips_page_url\n";
-  $trips = json_decode(file_get_contents($trips_page_url));
+  $trips = json_decode(fetch_url_or_exit($trips_page_url));
 
   foreach ($trips->features as $trip) {
     $stmt->execute([
-      ':id' => $trip->properties->trip_id,
+      ':trip_id' => $trip->properties->trip_id,
       ':route_id' => $trip->properties->route_id,
       ':shape_id' => $trip->properties->shape_id,
       ':headsign' => $trip->properties->trip_headsign
@@ -88,8 +128,7 @@ $offset = 0;
 $shapes = [];
 do {
   $shapes_page_url = "$shapes_url&resultRecordCount=$limit&resultOffset=$offset";
-  echo "Retrieving $shapes_page_url\n";
-  $result = json_decode(file_get_contents($shapes_page_url));
+  $result = json_decode(fetch_url_or_exit($shapes_page_url));
 
   foreach ($result->features as $shape) {
     if (!isset($shapes[$shape->properties->shape_id])) {
@@ -116,8 +155,7 @@ $offset = 0;
 $stops = [];
 do {
   $stops_page_url = "$stops_url&resultRecordCount=$limit&resultOffset=$offset";
-  echo "Retrieving $stops_page_url\n";
-  $result = json_decode(file_get_contents($stops_page_url));
+  $result = json_decode(fetch_url_or_exit($stops_page_url));
 
   foreach ($result->features as $stop) {
     $stops[$stop->properties->stop_id] = [$stop->properties->stop_lon, $stop->properties->stop_lat];
@@ -132,8 +170,7 @@ $offset = 0;
 $stops_by_trip_id = [];
 do {
   $stop_times_page_url = "$stop_times_url&resultRecordCount=$limit&resultOffset=$offset";
-  echo "Retrieving $stop_times_page_url\n";
-  $result = json_decode(file_get_contents($stop_times_page_url));
+  $result = json_decode(fetch_url_or_exit($stop_times_page_url));
 
   foreach ($result->features as $stop_time) {
     if (!isset($stops_by_trip_id[$stop_time->properties->trip_id])) {

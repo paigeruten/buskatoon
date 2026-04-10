@@ -267,17 +267,17 @@
 
         <div class="marker-legend" id="bus-marker-example">
           <div class="marker-example"><img src="bus-marker.png" width="18" height="24"></div>
-          <div class="marker-desc">Bus that reported its location in the last <strong>75 seconds</strong>.</div>
+          <div class="marker-desc">Bus that reported its location in the last <strong>2 minutes</strong>.</div>
         </div>
 
         <div class="marker-legend" id="bus-marker-grey-example">
           <div class="marker-example"><img src="bus-marker-grey.png" width="18" height="24"></div>
-          <div class="marker-desc">Bus that last reported its location <strong>75&ndash;150 seconds ago</strong>.</div>
+          <div class="marker-desc">Bus that last reported its location <strong>2&ndash;5 minutes ago</strong>.</div>
         </div>
 
         <div class="marker-legend" id="gravestone-example">
           <div class="marker-example"><img src="gravestone.png" width="10" height="10"></div>
-          <div class="marker-desc">Bus that hasn't reported its location for more than <strong>150 seconds</strong> (will be removed after 30 minutes).</div>
+          <div class="marker-desc">Bus that hasn't reported its location for more than <strong>5 minutes</strong> (will be removed after 30 minutes).</div>
         </div>
 
         <h3>Notes</h3>
@@ -336,9 +336,9 @@
 
         function getStatus(bus) {
             const age = getAge(bus.properties.timestamp);
-            if (age >= 150) {
+            if (age >= 300) {
                 return 'dormant';
-            } else if (age >= 75) {
+            } else if (age >= 120) {
                 return 'stale';
             } else {
                 return 'fresh';
@@ -630,8 +630,8 @@
             const updatePositions = async () => {
                 let data;
                 try {
-                    //const response = await fetch('./vehicle_positions.json');
-                    const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
+                    const response = await fetch('./vehicle_positions.json');
+                    //const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
                     if (!response.ok) {
                         throw new Error(`Response status: ${response.status}`);
                     }
