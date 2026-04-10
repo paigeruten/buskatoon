@@ -656,10 +656,23 @@
                     warningBarEl.classList.remove('show-warning-bar');
                 }
 
+                for (const busId in busFeaturesById) {
+                    if (!data.vehicles[busId]) {
+                        if (popup && popupBusId == busId) {
+                            popup.remove();
+                            popupBusId = undefined;
+                        }
+                        busPositions.features = busPositions.features.filter(bus => bus.properties.id != busId);
+                        busHistories.features = busHistories.features.filter(history => history.properties.id != busId);
+                        delete busFeaturesById[busId];
+                        delete busHistoriesById[busId];
+                    }
+                }
+
                 let busCount = 0;
                 for (const vehicleId in data.vehicles) {
                     const vehicleHistory = data.vehicles[vehicleId];
-                    const currentPos = vehicleHistory[0]; // Most recent position
+                    const currentPos = vehicleHistory[0];
 
                     if (busFeaturesById[vehicleId]) {
                         busFeaturesById[vehicleId].properties.bearing = currentPos.bearing;

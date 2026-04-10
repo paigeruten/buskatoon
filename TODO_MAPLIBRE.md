@@ -3,7 +3,7 @@
 * Bus markers
     * [x] Bus number and colour
     * [x] Fix mobile bug where bus markers don't show up sometimes
-    * [ ] Remove bus markers (and histories/routes) when they no longer show up in vehicle_positions.json
+    * [x] Remove bus markers (and histories/routes) when they no longer show up in vehicle_positions.json
 * Popup box
     * [x] Point it at the top of the bus marker rather than the bottom
     * [x] Move it with the bus
