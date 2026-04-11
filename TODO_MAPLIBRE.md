@@ -1,5 +1,5 @@
 * Backend
-    * [ ] Figure out why VehiclePositions.pb is timing out a lot
+    * [x] Figure out why VehiclePositions.pb is timing out a lot
 * Bus markers
     * [x] Bus number and colour
     * [x] Fix mobile bug where bus markers don't show up sometimes

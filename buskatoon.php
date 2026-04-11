@@ -12,23 +12,37 @@ $DB_FILE = "$SCRIPT_PATH/buskatoon.sqlite3";
 $JSON_FILE = $argv[1] ?? "$SCRIPT_PATH/vehicle_positions.json";
 $OUTAGE_LOG_FILE = "$SCRIPT_PATH/outages.log";
 
-function fetch_url($url) {
+function fetch_url($url, $max_retries = 4) {
+  // Fast fail on our end to prevent a much longer timeout on their end that often happens
+  $timeout_seconds = 2; 
+
   $options = [
     'http' => [
       'method' => "GET",
-      'header' => "User-Agent: Buskatoon/1.0\r\n",
-      'timeout' => 30,
-      'ignore_errors' => true
+      'header' => "User-Agent: Buskatoon/1.0\r\nAccept: */*\r\n",
+      'timeout' => $timeout_seconds,
+      'ignore_errors' => false
     ],
     'ssl' => [
-      'timeout' => 10,
+      'timeout' => $timeout_seconds,
       'verify_peer' => true,
       'verify_peer_name' => true,
     ]
   ];
 
   $context = stream_context_create($options);
-  return file_get_contents($url, false, $context);
+
+  for ($i = 0; $i < $max_retries; $i++) {
+    $result = @file_get_contents($url, false, $context);
+
+    if ($result !== false) {
+      return $result;
+    }
+
+    usleep(200000);
+  }
+
+  return false;
 }
 
 $current_outage = 0;
