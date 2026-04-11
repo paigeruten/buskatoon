@@ -632,8 +632,8 @@
             const updatePositions = async () => {
                 let data;
                 try {
-                    const response = await fetch('./vehicle_positions.json');
-                    //const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
+                    //const response = await fetch('./vehicle_positions.json');
+                    const response = await fetch('https://buskatoon.ca/vehicle_positions.json');
                     if (!response.ok) {
                         throw new Error(`Response status: ${response.status}`);
                     }
@@ -852,9 +852,11 @@
                                 coordinates: stopsById[stopId]
                             }
                         }));
-
-                        map.getSource('busRouteStops').setData(busRouteStops);
+                    } else {
+                        busRouteStops.features = [];
                     }
+
+                    map.getSource('busRouteStops').setData(busRouteStops);
 
                     const thisPopup = popup;
                     popup.on('close', () => {
