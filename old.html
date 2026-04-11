@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-121650351-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-121650351-1');
+    </script>
+
+    <title>Buskatoon - Saskatoon Live Bus Map</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+      #map {
+        height: 100%;
+      }
+
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        font-family: Roboto, Arial, sans-serif;
+      }
+
+      h1, p {
+        margin: 0;
+        padding: 0;
+      }
+
+      h1 {
+        margin-bottom: 10px;
+      }
+
+      p {
+        margin-bottom: 10px;
+      }
+
+      a {
+        color: blue;
+      }
+
+      .bus-label {
+        background-color: white;
+        font-family: helvetica neue, Arial, sans-serif;
+        text-align: center;
+        color: black;
+        font-weight: bold;
+        font-size: 10px;
+        line-height: 10px;
+        padding-bottom: 1px;
+        width: 18px;
+        border: 1px solid #0A184E;
+        border-radius: 3px;
+        margin: 0;
+      }
+
+      .bus-label-hidden {
+        display: none;
+      }
+
+      .bus-route-number {
+        display: inline-block;
+        text-align: center;
+        color: black;
+        font-weight: bold;
+        border-radius: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
+        margin-right: 5px;
+      }
+
+      .status-stale {
+        color: #f70;
+      }
+
+      .status-dormant {
+        font-weight: bold;
+        color: red;
+      }
+
+      #hud {
+        position: fixed;
+        top: 5px;
+        right: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
+        background-color: #fff;
+        padding: 6px 10px;
+        border-radius: 10px;
+        box-shadow: 1px 2px 0 #ccc;
+      }
+
+      #about {
+        position: fixed;
+        top: 20px;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        width: 800px;
+        opacity: 0.0;
+        z-index: -1000;
+        transition: opacity 0.2s ease;
+      }
+
+      #about #about-content {
+        color: #333;
+        font-size: 14px;
+        background-color: #fff;
+        padding: 4px 7px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px #999;
+        padding: 15px;
+        overflow: auto;
+      }
+
+      #about.show-about {
+        opacity: 1.0;
+        z-index: 1000;
+      }
+
+      .marker-legend {
+        display: flex;
+        margin-bottom: 5px;
+      }
+
+      .marker-legend .marker-example {
+        width: 32px;
+        text-align: center;
+      }
+
+      #bus-marker-example {
+        margin-top: 10px;
+      }
+
+      #bus-marker-example .marker-example,
+      #bus-marker-grey-example .marker-example {
+        position: relative;
+        top: -4px;
+      }
+
+      #you-are-here-example .marker-example {
+        position: relative;
+        top: -2px;
+      }
+
+      #gravestone-example .marker-example {
+        position: relative;
+        top: 0;
+      }
+
+      #you-are-here-example {
+        margin-top: 15px;
+      }
+
+      #warning-bar {
+        position: fixed;
+        bottom: -50px;
+        left: 0;
+        right: 0;
+        margin: 0 auto;
+        z-index: 999;
+        text-align: center;
+        transition: bottom 0.3s ease;
+      }
+
+      #warning-bar > span {
+        display: inline-block;
+        color: #555;
+        font-size: 16px;
+        background-color: #fff;
+        padding: 4px 7px;
+        border-radius: 10px;
+        box-shadow: 1px 2px 0 #ccc;
+      }
+
+      #warning-bar.show-warning-bar {
+        bottom: 10px;
+      }
+
+      /* https://github.com/tholman/github-corners */
+      .github-corner:hover .octo-arm {
+        animation: octocat-wave 560ms ease-in-out;
+      }
+
+      @keyframes octocat-wave {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        20% {
+          transform: rotate(-25deg);
+        }
+
+        40% {
+          transform: rotate(10deg);
+        }
+
+        60% {
+         transform: rotate(-25deg);
+        }
+
+        80% {
+          transform: rotate(10deg);
+        }
+
+        100% {
+          transform: rotate(0deg);
+        }
+      }
+
+      @media (max-width: 800px) {
+        #about {
+          top: 0;
+          width: 100%;
+        }
+
+        #about #about-content {
+          height: 95vh;
+        }
+
+        #warning-bar > span {
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="hud">
+      <span id="bus-count">0</span> buses
+      &middot;
+      <a href="#" id="about-link">about</a>
+    </div>
+    <div id="about">
+      <div id="about-content">
+        <a href="https://github.com/paigeruten/buskatoon" class="github-corner" aria-label="View source on GitHub">
+          <svg width="80" height="80" viewBox="0 0 250 250" style="position: absolute; top: 0px; right: 0px; border: 0px; z-index: 1000;" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z" fill="#151513"></path>
+            <path class="octo-arm" d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="#ffffff" style="transform-origin: 130px 106px;"></path>
+            <path class="octo-body" d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="#ffffff"></path>
+          </svg>
+        </a>
+
+        <h1>Buskatoon</h1>
+
+        <p>&hellip;is a live bus map of <a href="https://en.wikipedia.org/wiki/Saskatoon">Saskatoon</a>.</p>
+
+        <p>Feel free to email any feedback to <a href="mailto:paige.ruten@gmail.com"><code>paige.ruten@gmail.com</code></a>.</p>
+
+        <h3>Legend</h3>
+
+        <div class="marker-legend" id="bus-marker-example">
+          <div class="marker-example"><img src="bus-marker.png" width="18" height="24"></div>
+          <div class="marker-desc">Bus that reported its location in the last <strong>75 seconds</strong>.</div>
+        </div>
+
+        <div class="marker-legend" id="bus-marker-grey-example">
+          <div class="marker-example"><img src="bus-marker-grey.png" width="18" height="24"></div>
+          <div class="marker-desc">Bus that last reported its location <strong>75&ndash;150 seconds ago</strong>.</div>
+        </div>
+
+        <div class="marker-legend" id="gravestone-example">
+          <div class="marker-example"><img src="gravestone.png" width="10" height="10"></div>
+          <div class="marker-desc">Bus that hasn't reported its location for more than <strong>150 seconds</strong> (will be removed after 30 minutes).</div>
+        </div>
+
+        <div class="marker-legend" id="you-are-here-example">
+          <div class="marker-example"><img src="you_are_here.png" width="18" height="18"></div>
+          <div class="marker-desc">You are here! (Or were.)</div>
+        </div>
+
+        <h3>Notes</h3>
+
+        <p>Buses seem to report their location about every <strong>30 seconds</strong>. Those location reports take at least <strong>20 seconds</strong> to get to us. So bus locations shown will generally be <strong>20&ndash;50 seconds out of date</strong> at any given time. You can see precisely how out of date a bus's location is by clicking on it.</p>
+
+        <p>The last 5 location reports of each bus are shown as a series of arrows behind the bus.</p>
+
+        <p>If there are no buses reporting, and the sun is up, then there may be an outage of live data on saskatoon.ca's side. These seem pretty uncommon, but do happen.</p>
+
+        <p>
+          <button id="about-close"><strong>&larr; Back to map</strong></button>
+          <button id="about-pin">Get link to current view of map</button>
+        </p>
+      </div>
+    </div>
+    <div id="warning-bar"><span></span></div>
+
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/jquery.easing.1.3.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key="></script>
+    <script src="js/markerAnimate.js"></script>
+    <script src="js/SlidingMarker-0.2.8.min.js"></script>
+    <script>
+      SlidingMarker.initializeGlobally();
+    </script>
+    <script src="js/markerwithlabel.terikon.js"></script>
+    <script>
+      $("#about-link").click(function(e) {
+        $("#about").addClass("show-about");
+        e.preventDefault();
+      });
+
+      $("#about-close").click(function(e) {
+        $("#about").removeClass("show-about");
+        e.preventDefault();
+      });
+
+      function Vehicle(id, data, history, map) {
+        this.id = id;
+        this.longitude = data.longitude;
+        this.latitude = data.latitude;
+        this.bearing = data.bearing;
+        this.speed = data.speed;
+        this.last_report = data.timestamp;
+        this.route = data.route;
+        this.map = map;
+
+        this.marker = new MarkerWithLabel({
+          icon: {
+            url: 'bus-marker.png',
+            scaledSize: new google.maps.Size(18, 24)
+          },
+          labelContent: this.getRouteNumber(),
+          labelAnchor: new google.maps.Point(10, 34),
+          labelClass: "bus-label",
+          labelStyle: { backgroundColor: this.getColor(), color: this.getTextColor() },
+          labelInBackground: true,
+          title: this.getRouteName(),
+          position: new google.maps.LatLng(this.latitude, this.longitude)
+        });
+        this.marker.setMap(this.map);
+
+        this.updateStatus();
+        this.updateHistory(history);
+      }
+
+      Vehicle.prototype.update = function (data, history) {
+        this.longitude = data.longitude;
+        this.latitude = data.latitude;
+        this.bearing = data.bearing;
+        this.speed = data.speed;
+        this.last_report = data.timestamp;
+        this.route = data.route;
+
+        this.marker.setPosition(new google.maps.LatLng(this.latitude, this.longitude));
+        if (this.status != 'dormant') this.marker.set("labelContent", this.getRouteNumber());
+        this.marker.set("labelStyle", { backgroundColor: this.getColor(), color: this.getTextColor() });
+        this.marker.setTitle(this.getRouteName());
+
+        this.updateStatus();
+        this.updateHistory(history);
+      };
+
+      Vehicle.prototype.updateHistory = function (history) {
+        if (this.history_line) {
+          this.history_line.forEach(function (line) {
+            line.setMap(null);
+          });
+        }
+
+        this.history_line = [];
+        for (var i = 0; i < history.length - 1; i++) {
+          var line = new google.maps.Polyline({
+            path: [
+              { lat: history[i].latitude, lng: history[i].longitude },
+              { lat: history[i+1].latitude, lng: history[i+1].longitude }
+            ],
+            icons: [{
+              icon: {
+                path: google.maps.SymbolPath.BACKWARD_OPEN_ARROW,
+                scale: 0.75
+              },
+              offset: '0%'
+            }],
+            strokeColor: this.getColor(),
+            strokeOpacity: 1.0,
+            strokeWeight: 1.0
+          });
+          if (this.status != 'dormant') line.setMap(this.map);
+          this.history_line.push(line);
+        }
+      };
+
+      Vehicle.prototype.updateStatus = function() {
+        if (this.getAge() >= 150) {
+          if (this.status != 'dormant') {
+            this.status = 'dormant';
+            this.marker.setIcon({url: 'gravestone.png', scaledSize: new google.maps.Size(10, 10), anchor: new google.maps.Point(5, 5)});
+            this.marker.set("labelContent", "");
+            this.marker.set("labelClass", "bus-label-hidden");
+            (this.history_line || []).forEach(function (line) { line.setMap(null); });
+          }
+        } else if (this.getAge() >= 75) {
+          if (this.status != 'stale') {
+            this.status = 'stale';
+            this.marker.setIcon({url: 'bus-marker-grey.png', scaledSize: new google.maps.Size(18, 24)});
+            this.marker.set("labelContent", this.getRouteNumber());
+            this.marker.set("labelClass", "bus-label");
+            (this.history_line || []).forEach(function (line) { line.setMap(map); });
+          }
+        } else if (this.status != 'fresh') {
+          this.status = 'fresh';
+          this.marker.setIcon({url: 'bus-marker.png', scaledSize: new google.maps.Size(18, 24)});
+          this.marker.set("labelContent", this.getRouteNumber());
+          this.marker.set("labelClass", "bus-label");
+          (this.history_line || []).forEach(function (line) { line.setMap(map); });
+        }
+      };
+
+      Vehicle.prototype.getColor = function (color) {
+        return '#' + (this.route ? this.route.color : 'aaaaaa');
+      };
+
+      Vehicle.prototype.getTextColor = function() {
+        var hex = this.getColor().replace('#', '');
+        var r = parseInt(hex.substr(0, 2), 16);
+        var g = parseInt(hex.substr(2, 2), 16);
+        var b = parseInt(hex.substr(4, 2), 16);
+        var luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.5 ? 'black' : 'white';
+      };
+
+      Vehicle.prototype.getAge = function() {
+        return Math.round(+(new Date())/1000 - this.last_report);
+      }
+
+      Vehicle.prototype.getDirection = function() {
+        return ['↑ N', '↗ NE', '→ E', '↘ SE', '↓ S', '↙ SW', '← W', '↖ NW'][Math.round(this.bearing / 45)];
+      }
+
+      Vehicle.prototype.getSpeed = function() {
+        if (this.speed !== null) {
+          return '(' + Math.round(this.speed * 3.6) + ' km/h)';
+        } else {
+          return '';
+        }
+      }
+
+      Vehicle.prototype.getRouteNumber = function() {
+        return this.route ? this.route.short_name : '??';
+      }
+
+      Vehicle.prototype.getRouteName = function() {
+        return this.route ? this.route.long_name : '(Unknown route)';
+      }
+
+      Vehicle.prototype.getHeaderInfo = function() {
+        var div = document.createElement('div');
+        div.innerHTML =
+          "<h3>" +
+            "<span class='bus-route-number' style='background-color: " + this.getColor() + "; color: " + this.getTextColor() + ";'>" +
+              this.getRouteNumber() +
+            "</span> " +
+            this.getRouteName() +
+          "</h3>";
+        return div.firstChild;
+      };
+
+      Vehicle.prototype.getInfo = function() {
+        return (
+          "<p>" +
+            (this.getDirection() ? "<strong>Bearing:</strong> " + this.getDirection() + " " + this.getSpeed() + "<br>" : "") +
+            (this.route ? "<strong>Headsign:</strong> " + this.route.headsign + "<br>" : "") +
+            "<strong>Last report:</strong> <span class='status-" + this.status + "'>" + this.getAge() + " seconds ago</span>" +
+          "</p>"
+        );
+      };
+
+      function initMap() {
+        var latParam, lngParam, zoomParam;
+
+        if (typeof URL === 'function') {
+          var url = new URL(window.location.href);
+          latParam = url.searchParams.get('lat');
+          lngParam = url.searchParams.get('lng');
+          zoomParam = url.searchParams.get('zoom');
+        }
+
+        var lat = latParam || 52.133214;
+        var lng = lngParam || -106.650046;
+        var zoom = zoomParam || 12;
+
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: { lat: Number(lat), lng: Number(lng) },
+          zoom: Number(zoom),
+          disableDefaultUI: true,
+          zoomControl: true
+        });
+        var info_window = new google.maps.InfoWindow();
+        info_window._vehicleId = null;
+
+        if (navigator.geolocation) {
+          var you_are_here = new MarkerWithLabel({
+            icon: {
+              url: 'you_are_here.png',
+              scaledSize: new google.maps.Size(18, 18)
+            },
+            title: 'You are here! (Or were.)'
+          });
+
+          navigator.geolocation.watchPosition(function(position) {
+            var pos = { lat: position.coords.latitude, lng: position.coords.longitude };
+            you_are_here.setPosition(pos);
+            you_are_here.setMap(map);
+          });
+        }
+
+        google.maps.event.addListener(map, "click", function (event) {
+          info_window.close();
+          $("#about").removeClass("show-about");
+        });
+
+        $("#about-pin").click(function(e) {
+          if (typeof URL === 'function') {
+            var url = new URL(window.location.href);
+            url.searchParams.set('lat', map.center.lat());
+            url.searchParams.set('lng', map.center.lng());
+            url.searchParams.set('zoom', map.zoom);
+            window.location.href = url;
+          } else {
+            alert("Sorry, this doesn't work in the browser you are using.");
+          }
+          e.preventDefault();
+        });
+
+        var vehicles = {};
+
+        var updatePositions = function() {
+          $.ajax({
+            url: "vehicle_positions.json",
+            dataType: "json",
+            context: document.body,
+            success: function(data) {
+              if (data.outage) {
+                $('#warning-bar > span').text("⚠️ No buses are reporting their positions at the moment.");
+                $('#warning-bar').addClass('show-warning-bar');
+              } else {
+                $('#warning-bar').removeClass('show-warning-bar');
+              }
+
+              for (var vehicleId in vehicles) {
+                vehicles[vehicleId].alive = false;
+              }
+
+              for (var vehicleId in data.vehicles) {
+                var vehicle_data = data.vehicles[vehicleId][0];
+
+                if (vehicles[vehicleId]) {
+                  var vehicle = vehicles[vehicleId];
+                  vehicle.update(vehicle_data, data.vehicles[vehicleId]);
+                  vehicle.alive = true;
+                  if (info_window._vehicleId == vehicleId) {
+                    info_window.setHeaderContent(vehicle.getHeaderInfo());
+                    info_window.setContent(vehicle.getInfo());
+                  }
+                } else {
+                  var vehicle = new Vehicle(vehicleId, vehicle_data, data.vehicles[vehicleId], map);
+                  vehicle.alive = true;
+
+                  vehicles[vehicleId] = vehicle;
+
+                  (function (vehicle) {
+                    vehicle.marker.addListener('click', function() {
+                      info_window.close();
+                      info_window.setHeaderContent(vehicle.getHeaderInfo());
+                      info_window.setContent(vehicle.getInfo());
+                      info_window._vehicleId = vehicle.id;
+                      info_window.open(map, vehicle.marker);
+                    });
+                  })(vehicle);
+                }
+
+                (function (vehicle) {
+                  vehicle.history_line.forEach(function (line) {
+                    line.addListener('click', function() {
+                      info_window.close();
+                      info_window.setHeaderContent(vehicle.getHeaderInfo());
+                      info_window.setContent(vehicle.getInfo());
+                      info_window._vehicleId = vehicle.id;
+                      info_window.open(map, vehicle.marker);
+                    });
+                  });
+                })(vehicle);
+              }
+
+              var busCount = 0;
+              for (var vehicleId in vehicles) {
+                if (!vehicles[vehicleId].alive) {
+                  vehicles[vehicleId].marker.setMap(null);
+                  if (vehicles[vehicleId].history_line) {
+                    vehicles[vehicleId].history_line.forEach(function (line) {
+                      line.setMap(null);
+                    });
+                  }
+                  delete vehicles[vehicleId];
+                } else if (vehicles[vehicleId].status != 'dormant') {
+                  busCount++;
+                }
+              }
+
+              $("#bus-count").text(busCount);
+            },
+            error: function() {
+              $('#warning-bar > span').text("⚠️ Can't connect to server. Will keep retrying...");
+              $('#warning-bar').addClass('show-warning-bar');
+            }
+          });
+        };
+        updatePositions();
+        setInterval(updatePositions, 10000);
+
+        var updateTimer = function() {
+          for (var vehicleId in vehicles) {
+            vehicles[vehicleId].updateStatus();
+          }
+          if (info_window._vehicleId && vehicles[info_window._vehicleId]) {
+            info_window.setHeaderContent(vehicles[info_window._vehicleId].getHeaderInfo());
+            info_window.setContent(vehicles[info_window._vehicleId].getInfo());
+          }
+          setTimeout(updateTimer, 1000);
+        };
+        updateTimer();
+      }
+      initMap();
+    </script>
+  </body>
+</html>
