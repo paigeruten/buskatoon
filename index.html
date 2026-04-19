@@ -879,13 +879,6 @@
                 e.preventDefault();
             });
 
-            map.on('mouseenter', 'busHistories-fill', () => { map.getCanvas().style.cursor = 'pointer'; });
-            map.on('mouseleave', 'busHistories-fill', () => { map.getCanvas().style.cursor = ''; });
-            map.on('click', 'busHistories-fill', (e) => {
-                selectBus(e.features[0].properties.id);
-                e.preventDefault();
-            });
-
             map.on('click', (e) => {
                 aboutEl.classList.remove('show-about');
             });
