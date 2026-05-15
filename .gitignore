@@ -4,4 +4,3 @@ shapes.json
 outages.log
 *.sqlite3
 .tags
-google-maps-api-key.txt

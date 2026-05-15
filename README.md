@@ -8,25 +8,25 @@ Here it is: https://buskatoon.ca/
 
 ## Run locally
 
-Requires: PHP7 + [composer](https://getcomposer.org/)
+Requires: PHP8 + [composer](https://getcomposer.org/)
 
 First, install PHP dependencies and create the trips/routes database:
 
 ```bash
-$ composer install
-$ php import_data.php
+$ just deps
+$ just update
 ```
 
-`php buskatoon.php` will pull the latest `VehiclePositions.pb` data and update `vehicle_positions.json` with it. Use `run.sh` to have it automatically run every 10 seconds:
+`php buskatoon.php ../public/vehicle_positions.json` will pull the latest `VehiclePositions.pb` data and update `vehicle_positions.json` with it. Use `just run` to have it automatically run every 10 seconds:
 
 ```bash
-$ ./run.sh
+$ just run
 ```
 
 Finally, open `index.html` in your browser. The bus positions on the map should automatically update as the script pulls in new location data.
 
 ```bash
-$ open index.html
+$ just serve
 ```
 
 ## The data

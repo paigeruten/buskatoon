@@ -1,0 +1,2 @@
+* * * * * /usr/bin/flock -n /tmp/buskatoon.lock /bin/bash -l ~/buskatoon/cron/update-bus-positions.sh
+0 */6 * * * bash -l ~/buskatoon/cron/update-transit-data.sh
