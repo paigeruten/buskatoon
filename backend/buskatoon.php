@@ -25,8 +25,8 @@ function fetch_url($url, $max_retries = 4) {
     ],
     'ssl' => [
       'timeout' => $timeout_seconds,
-      'verify_peer' => true,
-      'verify_peer_name' => true,
+      'verify_peer' => false,
+      'verify_peer_name' => false,
     ]
   ];
 
